@@ -10,58 +10,6 @@ namespace StudentManagement
 {
 	public partial class App : Application
 	{
-		//protected override void OnStartup(StartupEventArgs e)
-		//{
-		//	// 1) Ngăn WPF tự động shutdown khi cửa sổ đầu tiên (ActivationWindow) đóng
-		//	this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-
-		//	base.OnStartup(e);
-
-		//	// 2) Hiển thị cửa sổ nhập mã kích hoạt
-		//	var dlg = new ActivationWindow();
-		//	bool isActivated = dlg.ShowDialog() ?? false;
-
-		//	if (isActivated)
-		//	{
-		//		var (state, msg) = LicenseService.CheckLicense();
-		//		Console.WriteLine($"License state: {state}, Message: {msg}");
-
-		//		if (state == LicenseState.Activated || state == LicenseState.Trial)
-		//		{
-		//			// 3) Khởi tạo và gán MainWindow
-		//			var main = new MainWindow();
-		//			this.MainWindow = main;
-
-		//			// 4) Chuyển ShutdownMode để app chỉ tắt khi MainWindow đóng
-		//			this.ShutdownMode = ShutdownMode.OnMainWindowClose;
-
-		//			// 5) Mở MainWindow
-		//			main.Show();
-		//			return;   // thoát OnStartup, giữ app chạy
-		//		}
-		//		else
-		//		{
-		//			MessageBox.Show(
-		//				"Activation failed. The application will now exit.",
-		//				"License",
-		//				MessageBoxButton.OK,
-		//				MessageBoxImage.Error
-		//			);
-		//		}
-		//	}
-		//	else
-		//	{
-		//		MessageBox.Show(
-		//			"Activation was not completed. The application will now exit.",
-		//			"License",
-		//			MessageBoxButton.OK,
-		//			MessageBoxImage.Error
-		//		);
-		//	}
-
-		//	// 6) Nếu không kích hoạt, tắt hoàn toàn
-		//	Shutdown();
-		//}
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
@@ -69,72 +17,120 @@ namespace StudentManagement
 			// Ngăn ứng dụng tự shutdown khi cửa sổ đầu tiên đóng
 			this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-			// Khởi tạo hệ thống license
-			LicenseService.InitializeFirstRun();
-
-			// Kiểm tra trạng thái license
-			var (licenseState, message) = LicenseService.CheckLicense();
-
-			switch (licenseState)
+			try
 			{
-				case LicenseState.Activated:
-					StartApplication();
-					break;
+				// Khởi tạo hệ thống license
+				Console.WriteLine("Initializing license...");
+				LicenseService.InitializeFirstRun();
+				Console.WriteLine("License initialization completed");
 
-				case LicenseState.Trial:
-					if (MessageBox.Show(
-						$"Bạn đang dùng bản dùng thử. {message}\nBạn có muốn kích hoạt ngay không?",
-						"Bản dùng thử",
-						MessageBoxButton.YesNo,
-						MessageBoxImage.Question) == MessageBoxResult.Yes)
-					{
+				// Kiểm tra trạng thái license
+				var (licenseState, message, expirationDate) = LicenseService.CheckLicense();
+
+				switch (licenseState)
+				{
+					case LicenseState.Activated:
+						if (expirationDate.HasValue && expirationDate.Value > DateTime.UtcNow)
+						{
+							Console.WriteLine("License đã activated và còn hạn - Starting application");
+							StartApplication();
+							return;
+						}
+						else
+						{
+							MessageBox.Show(
+								"License đã hết hạn. Vui lòng kích hoạt lại.",
+								"Hết hạn license",
+								MessageBoxButton.OK,
+								MessageBoxImage.Warning);
+							ShowActivationWindow();
+						}
+						break;
+
+					case LicenseState.Trial:
+						if (expirationDate.HasValue && expirationDate.Value > DateTime.UtcNow)
+						{
+							var remainingTime = expirationDate.Value - DateTime.UtcNow;
+							if (MessageBox.Show(
+								$"Bạn đang dùng bản dùng thử. Còn {remainingTime.Days} ngày {remainingTime.Hours} giờ.\nBạn có muốn kích hoạt ngay không?",
+								"Bản dùng thử",
+								MessageBoxButton.YesNo,
+								MessageBoxImage.Question) == MessageBoxResult.Yes)
+							{
+								ShowActivationWindow();
+							}
+							else
+							{
+								StartApplication();
+							}
+						}
+						else
+						{
+							MessageBox.Show(
+								"Thời gian dùng thử đã hết. Vui lòng kích hoạt phần mềm.",
+								"Hết hạn dùng thử",
+								MessageBoxButton.OK,
+								MessageBoxImage.Warning);
+							ShowActivationWindow();
+						}
+						break;
+
+					default:
+						MessageBox.Show(
+							"Vui lòng kích hoạt phần mềm để sử dụng.",
+							"Yêu cầu kích hoạt",
+							MessageBoxButton.OK,
+							MessageBoxImage.Information);
 						ShowActivationWindow();
-					}
-					else
-					{
-						StartApplication();
-					}
-					break;
-
-				case LicenseState.Expired:
-					MessageBox.Show(
-						"Bản dùng thử đã hết hạn. Vui lòng kích hoạt phần mềm.",
-						"Hết hạn",
-						MessageBoxButton.OK,
-						MessageBoxImage.Warning);
-					ShowActivationWindow();
-					break;
-
-				case LicenseState.Invalid:
-				default:
-					MessageBox.Show(
-						"License không hợp lệ. Vui lòng kích hoạt phần mềm.",
-						"Lỗi License",
-						MessageBoxButton.OK,
-						MessageBoxImage.Error);
-					ShowActivationWindow();
-					break;
+						break;
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Lỗi khởi động: {ex}");
+				MessageBox.Show(
+					"Có lỗi xảy ra khi khởi động ứng dụng. Vui lòng thử lại.",
+					"Lỗi",
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
+				Shutdown();
 			}
 		}
 
 		private void ShowActivationWindow()
 		{
-			var activationWindow = new ActivationWindow();
-			bool? result = activationWindow.ShowDialog();
+			try
+			{
+				var activationWindow = new ActivationWindow();
+				bool? result = activationWindow.ShowDialog();
 
-			if (result == true)
-			{
-				// Kích hoạt thành công
-				StartApplication();
+				if (result == true)
+				{
+					// Kiểm tra lại sau khi kích hoạt
+					if (LicenseService.IsActivatedAndValid())
+					{
+						Console.WriteLine("Kích hoạt thành công - Starting application");
+						StartApplication();
+						return;
+					}
+					
+					MessageBox.Show(
+						"Kích hoạt không thành công. Vui lòng thử lại.",
+						"Lỗi kích hoạt",
+						MessageBoxButton.OK,
+						MessageBoxImage.Error);
+				}
+
+				Shutdown();
 			}
-			else
+			catch (Exception ex)
 			{
-				// Hủy kích hoạt
+				Console.WriteLine($"Lỗi trong quá trình kích hoạt: {ex}");
 				MessageBox.Show(
-					"Ứng dụng không thể chạy khi chưa kích hoạt. Đang thoát...",
-					"Yêu cầu kích hoạt",
+					"Có lỗi xảy ra trong quá trình kích hoạt. Vui lòng thử lại.",
+					"Lỗi",
 					MessageBoxButton.OK,
-					MessageBoxImage.Stop);
+					MessageBoxImage.Error);
 				Shutdown();
 			}
 		}
@@ -144,7 +140,7 @@ namespace StudentManagement
 			var mainWindow = new MainWindow();
 			this.MainWindow = mainWindow;
 			this.ShutdownMode = ShutdownMode.OnMainWindowClose;
-			//mainWindow.Show();
+			mainWindow.Show();
 		}
 
 		public static string GetMachineId()

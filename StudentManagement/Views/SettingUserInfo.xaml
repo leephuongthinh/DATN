@@ -67,7 +67,7 @@
                             Height="20"
                             Margin="0,16,0,4"
                             Command="{Binding GetInfoSourceInSettingByRoleCommand}"
-                            Content="học viên"
+                            Content="Học viên"
                             FontSize="16"
                             GroupName="Role"
                             IsChecked="{Binding ListCheck[0], UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">

@@ -123,7 +123,7 @@ namespace StudentManagement.ViewModels
 
             Roles.Add("Admin");
             Roles.Add("Giáo viên");
-            Roles.Add("học viên");
+            Roles.Add("Học viên");
 
 
             if (trainingForms != null)
@@ -222,7 +222,7 @@ namespace StudentManagement.ViewModels
 
             switch (SelectedRole)
             {
-                case "học viên":
+                case "Học viên":
                     {
                         
                         InfoSource.Add(new InfoItemViewModel(new InfoItem(Guid.NewGuid(), "Chương trình đào tạo", 2, FacultyServices.Instance.LoadListFaculty(), null, true)));

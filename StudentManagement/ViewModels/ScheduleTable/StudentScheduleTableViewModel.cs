@@ -75,7 +75,9 @@ namespace StudentManagement.ViewModels
         {
             if (SelectedSemester == null)
                 return;
-            switch (LoginServices.CurrentUser.UserRole.Role)
+			ScheduleItems = new ObservableCollection<ScheduleItem>(); // Thêm dòng này
+
+			switch (LoginServices.CurrentUser.UserRole.Role)
             {
                 case "học viên":
                     foreach (SubjectClass item in CourseRegisterServices.Instance.LoadCourseRegisteredListBySemesterIdAndStudentId(SelectedSemester.Id, CurrentStudent.Id))
@@ -101,13 +103,13 @@ namespace StudentManagement.ViewModels
             User currentUser = LoginServices.CurrentUser;
             switch(currentUser.UserRole.Role)
             {
-                case "học viên":
+                case "Học viên":
                     CurrentStudent = StudentServices.Instance.FindStudentByUserId(currentUser.Id);
-                    var tempSemesters = SemesterServices.Instance.LoadListSemestersByStudentIdAndSemesterStatuses(CurrentStudent.Id, new bool[] { false, false, true });
+                    var tempSemesters = SemesterServices.Instance.LoadListSemestersByStudentIdAndSemesterStatuses(CurrentStudent.Id, new bool[] { true, true, true });
                     return new ObservableCollection<Semester>(tempSemesters.OrderBy(x => x.Batch).ThenBy(y => y.DisplayName).ToList());
                 case "Giáo viên":
                     CurrentTeacher = TeacherServices.Instance.GetTeacherbyUser(currentUser);
-                    var tempSemesters2 = SemesterServices.Instance.LoadListSemestersByTeacherAndSemesterStatuses(CurrentTeacher, new bool[] { false, false, true });
+                    var tempSemesters2 = SemesterServices.Instance.LoadListSemestersByTeacherAndSemesterStatuses(CurrentTeacher, new bool[] { true, true, true });
                     return new ObservableCollection<Semester>(tempSemesters2.OrderBy(x => x.Batch).ThenBy(y => y.DisplayName).ToList());
                 default:
                     return new ObservableCollection<Semester>();

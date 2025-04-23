@@ -230,21 +230,79 @@ namespace StudentManagement.ViewModels
         {
             return StudentClass.Any(student => student.Username == studentId);
         }
+		private StudentGrid FindSearchQueryInDatabase(string username)
+		{
+			try
+			{
+				var user = UserServices.Instance.FindUserByUsername(username);
+				var student = StudentServices.Instance.GetStudentbyUser(user);
 
-        private StudentGrid FindSearchQueryInDatabase(string username)
-        {
-            try
-            {
-                var user = UserServices.Instance.FindUserByUsername(username);
-                return StudentServices.Instance.ConvertStudentToStudentGrid(StudentServices.Instance.GetStudentbyUser(user));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
+				if (student == null)
+				{
+					// Có thể log hoặc trả null tùy yêu cầu
+					return null;
+				}
 
-        private async void AddStudentFunction()
+				return StudentServices.Instance.ConvertStudentToStudentGrid(student);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+
+
+		//private StudentGrid FindSearchQueryInDatabase(string username)
+		//{
+		//    try
+		//    {
+		//        var user = UserServices.Instance.FindUserByUsername(username);
+		//        return StudentServices.Instance.ConvertStudentToStudentGrid(StudentServices.Instance.GetStudentbyUser(user));
+		//    }
+		//    catch (Exception)
+		//    {
+		//        return null;
+		//    }
+		//}
+		//private StudentGrid FindSearchQueryInDatabase(string username)
+		//{
+		//	try
+		//	{
+		//		var user = UserServices.Instance.FindUserByUsername(username);
+
+		//		if (user == null)
+		//		{
+		//			// Có thể ghi log tại đây để dễ debug
+		//			Console.WriteLine("User không tồn tại trong cơ sở dữ liệu.");
+		//			return null;
+		//		}
+
+		//		var student = StudentServices.Instance.GetStudentbyUser(user);
+
+		//		if (student == null)
+		//		{
+		//			Console.WriteLine("Không tìm thấy student ứng với user này.");
+		//			return null;
+		//		}
+
+		//		return StudentServices.Instance.ConvertStudentToStudentGrid(student);
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		// Ghi log lỗi chi tiết để debug dễ hơn
+		//		Console.WriteLine($"Lỗi xảy ra: {ex.Message}");
+		//		return null;
+		//	}
+		//}
+		//private StudentGrid FindSearchQueryInDatabase(string username)
+		//{
+		//	var user = UserServices.Instance.FindUserByUsername(username);
+		//	return StudentServices.Instance.ConvertStudentToStudentGrid(
+		//			 StudentServices.Instance.GetStudentbyUser(user));
+		//}
+
+
+		private async void AddStudentFunction()
         {
             try
             {

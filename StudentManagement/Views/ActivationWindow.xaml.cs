@@ -43,9 +43,5 @@ namespace StudentManagement.Views
 								MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 		}
-
-
-
-
 	}
 }

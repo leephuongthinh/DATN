@@ -198,7 +198,7 @@ namespace StudentManagement.ViewModels
 
                 switch (user.UserRole.Role)
                 {
-                    case "học viên":
+                    case "Học viên":
                         {
                             var student = StudentServices.Instance.GetStudentbyUser(user);
                             if (student == null)

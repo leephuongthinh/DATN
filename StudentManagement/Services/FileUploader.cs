@@ -21,9 +21,9 @@ namespace StudentManagement.Services
 
         private const string UrlGetServer = "https://api.gofile.io/getServer";
         private const string UrlUpload = ".gofile.io/uploadFile";
-        private const string Token = "mNLWYdMzHz6QIDEIaDKy4hQs5do0ee48";
-        private const string FolderId = "aff21df2-9b10-4be4-aaab-9075c6cadb2a";
-        private const string TempToken = "PH3cde6ousy5TsCzYeOnMOvOt3yXe2TG";
+        private const string Token = "FqA0vQw2FiIahp7xJg564c0oNTQZeA3l";//mNLWYdMzHz6QIDEIaDKy4hQs5do0ee48
+		private const string FolderId = "b652a001-d05d-40dd-b720-ce94a2ef2934";//aff21df2-9b10-4be4-aaab-9075c6cadb2a
+		private const string TempToken = "PH3cde6ousy5TsCzYeOnMOvOt3yXe2TG";
 
         public FileUploader()
         {

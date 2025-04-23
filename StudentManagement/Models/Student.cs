@@ -39,5 +39,6 @@ namespace StudentManagement.Models
         public virtual TrainingForm TrainingForm { get; set; }
         public virtual User User { get; set; }
         public virtual ICollection<TrainingScore> TrainingScores { get; set; }
-    }
+		public string Username { get;  set; }
+	}
 }
