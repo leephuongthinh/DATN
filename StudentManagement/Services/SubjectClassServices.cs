@@ -24,7 +24,7 @@ namespace StudentManagement.Services
 
         public DbSet<SubjectClass> LoadSubjectClassList()
         {
-            return DataProvider.Instance.Database.SubjectClasses;
+            return DataProvider.Instance.Database.SubjectClass;
         }
 
         public List<SubjectClass> MinimizeSubjectClassListBySemesterStatus(List<SubjectClass> listSubjectClass, bool[] semesterStatus)
@@ -39,7 +39,7 @@ namespace StudentManagement.Services
 
         public List<SubjectClass> LoadSubjectClassListBySemesterId(Guid id)
         {
-            return DataProvider.Instance.Database.SubjectClasses.Where(subjectClass => subjectClass.Semester.Id == id).Where(subjectClass=>subjectClass.IsDeleted == false).ToList();
+            return DataProvider.Instance.Database.SubjectClass.Where(subjectClass => subjectClass.Semester.Id == id).Where(subjectClass=>subjectClass.IsDeleted == false).ToList();
         }
 
         /*public SubjectClass ConvertSubjectClassCardToSubjectClass(SubjectClassCard subjectClassCard)
@@ -67,7 +67,7 @@ namespace StudentManagement.Services
         /// <returns>SubjectClass || null</returns>
         public SubjectClass FindSubjectClassBySubjectClassId(Guid id)
         {
-            SubjectClass subjectClass = DataProvider.Instance.Database.SubjectClasses.Where(subjectClassItem => subjectClassItem.Id == id).FirstOrDefault();
+            SubjectClass subjectClass = DataProvider.Instance.Database.SubjectClass.Where(subjectClassItem => subjectClassItem.Id == id).FirstOrDefault();
 
             return subjectClass;
         }
@@ -80,7 +80,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                DataProvider.Instance.Database.SubjectClasses.AddOrUpdate(subjectClass);
+                DataProvider.Instance.Database.SubjectClass.AddOrUpdate(subjectClass);
                 DataProvider.Instance.Database.SaveChanges();
                 return true;
             }
@@ -237,7 +237,7 @@ namespace StudentManagement.Services
                 NumberOfStudents = subjectClass.NumberOfStudents,
                 Image = subjectClass?.DatabaseImageTable?.Image,
                 //get main teacher of the class
-                SelectedTeacher = subjectClass.Teachers.FirstOrDefault(),
+                SelectedTeacher = subjectClass.Teacher.FirstOrDefault(),
                 SelectedSubject = subjectClass.Subject,
                 SelectedTrainingForm = subjectClass.TrainingForm,
                 SelectedSemester = subjectClass.Semester,
@@ -266,11 +266,11 @@ namespace StudentManagement.Services
 
             if (temp != null)
             {
-                subjectClass.Teachers = temp.Teachers;
+                subjectClass.Teacher = temp.Teacher;
             }
 
-            subjectClass.Teachers.Clear();
-            subjectClass.Teachers.Add(subjectClassCard.SelectedTeacher);
+            subjectClass.Teacher.Clear();
+            subjectClass.Teacher.Add(subjectClassCard.SelectedTeacher);
 
             return subjectClass;
         }

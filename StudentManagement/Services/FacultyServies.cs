@@ -22,7 +22,7 @@ namespace StudentManagement.Services
 
         public DbSet<Faculty> LoadFacultyList()
         {
-            return DataProvider.Instance.Database.Faculties;
+            return DataProvider.Instance.Database.Faculty;
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace StudentManagement.Services
         /// <returns>FacultyCard</returns>
         public FacultyCard ConvertFacultyToFacultyCard(Faculty faculty)
         {
-            int numberOfStudentsOfFaculty = DataProvider.Instance.Database.Students.Where(student => student.IdFaculty == faculty.Id).Count();
+            int numberOfStudentsOfFaculty = DataProvider.Instance.Database.Student.Where(student => student.IdFaculty == faculty.Id).Count();
 
             FacultyCard facultyCard = new FacultyCard(faculty.Id, faculty.DisplayName, new DateTime(2015, 12, 31), numberOfStudentsOfFaculty);
 
@@ -63,7 +63,7 @@ namespace StudentManagement.Services
         /// <returns>Faculty || null</returns>
         public Faculty FindFacultyByFacultyId(Guid id)
         {
-            Faculty faculty = DataProvider.Instance.Database.Faculties.Where(facultyItem => facultyItem.Id == id).FirstOrDefault();
+            Faculty faculty = DataProvider.Instance.Database.Faculty.Where(facultyItem => facultyItem.Id == id).FirstOrDefault();
 
             return faculty;
         }
@@ -76,7 +76,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                DataProvider.Instance.Database.Faculties.AddOrUpdate(faculty);
+                DataProvider.Instance.Database.Faculty.AddOrUpdate(faculty);
                 DataProvider.Instance.Database.SaveChanges();
                 return true;
             }
@@ -136,7 +136,7 @@ namespace StudentManagement.Services
         public ObservableCollection<string> LoadListFaculty()
         {
             ObservableCollection<string> listFaculty = new ObservableCollection<string>();
-            DataProvider.Instance.Database.Faculties.ToList().ForEach(faculty => listFaculty.Add(faculty.DisplayName));
+            DataProvider.Instance.Database.Faculty.ToList().ForEach(faculty => listFaculty.Add(faculty.DisplayName));
             return listFaculty;
         }
     }

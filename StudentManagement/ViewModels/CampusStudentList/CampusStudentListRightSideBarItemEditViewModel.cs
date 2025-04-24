@@ -18,8 +18,8 @@ namespace StudentManagement.ViewModels
         private UserCard _currentStudent;
         public UserCard CurrentStudent { get => _currentStudent; set => _currentStudent = value; }
 
-        private User _thisUser;
-        public User ThisUser { get => _thisUser; set => _thisUser = value; }
+        private Users _thisUser;
+        public Users ThisUser { get => _thisUser; set => _thisUser = value; }
 
         private ObservableCollection<string> _trainings;
         public ObservableCollection<string> Trainings { get => _trainings; set => _trainings = value; }
@@ -177,7 +177,7 @@ namespace StudentManagement.ViewModels
 
         void PrepairToLoadInfoSource()
         {
-            ThisUser.UserRole = DataProvider.Instance.Database.UserRoles.Where(x => x.Role == SelectedRole).FirstOrDefault();
+            ThisUser.UserRole = DataProvider.Instance.Database.UserRole.Where(x => x.Role == SelectedRole).FirstOrDefault();
             ThisUser.IdUserRole = ThisUser.UserRole.Id;
             LoadInfoSource(ThisUser.Id);
         }
@@ -194,7 +194,7 @@ namespace StudentManagement.ViewModels
                 InfoSource.Add(new InfoItemViewModel(new InfoItem(Guid.NewGuid(), "Họ và tên", 0, null, user.DisplayName, true)));
                 InfoSource.Add(new InfoItemViewModel(new InfoItem(Guid.NewGuid(), "Địa chỉ email", 0, null, user.Email, true)));
 
-                user.UserRole = DataProvider.Instance.Database.UserRoles.Where(x => user.IdUserRole == x.Id).FirstOrDefault();
+                user.UserRole = DataProvider.Instance.Database.UserRole.Where(x => user.IdUserRole == x.Id).FirstOrDefault();
 
                 switch (user.UserRole.Role)
                 {
@@ -281,20 +281,20 @@ namespace StudentManagement.ViewModels
                 {
                     if (SelectedRole == "Học viên")
                     {
-                        Student currentStudent = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == ThisUser.Id).FirstOrDefault();
+                        Student currentStudent = DataProvider.Instance.Database.Student.Where(x => x.IdUsers == ThisUser.Id).FirstOrDefault();
 
                         string temp = Convert.ToString(InfoSource[2].Content);
-                        currentStudent.Faculty = DataProvider.Instance.Database.Faculties.Where(x => x.DisplayName == temp).FirstOrDefault();
+                        currentStudent.Faculty = DataProvider.Instance.Database.Faculty.Where(x => x.DisplayName == temp).FirstOrDefault();
                         temp = Convert.ToString(InfoSource[3].Content);
-                        currentStudent.TrainingForm = DataProvider.Instance.Database.TrainingForms.Where(x => x.DisplayName == temp).FirstOrDefault();
+                        currentStudent.TrainingForm = DataProvider.Instance.Database.TrainingForm.Where(x => x.DisplayName == temp).FirstOrDefault();
                         currentStudent.IdFaculty = currentStudent.Faculty.Id;
                         currentStudent.IdTrainingForm = currentStudent.TrainingForm.Id;
                     }
                     else if (SelectedRole == "Giáo viên")
                     {
-                        Teacher currentTeacher = DataProvider.Instance.Database.Teachers.Where(x => x.IdUsers == ThisUser.Id).FirstOrDefault();
+                        Teacher currentTeacher = DataProvider.Instance.Database.Teacher.Where(x => x.IdUsers == ThisUser.Id).FirstOrDefault();
                         string temp = Convert.ToString(InfoSource[2].Content);
-                        currentTeacher.Faculty = DataProvider.Instance.Database.Faculties.Where(x => x.DisplayName == temp).FirstOrDefault();
+                        currentTeacher.Faculty = DataProvider.Instance.Database.Faculty.Where(x => x.DisplayName == temp).FirstOrDefault();
                         currentTeacher.IdFaculty = currentTeacher.Faculty.Id;
                     }
                 }

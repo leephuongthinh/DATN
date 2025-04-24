@@ -23,31 +23,31 @@ namespace StudentManagement.Services
         //2-Kết thúc đợt đăng ký học phần, đưa học viên vào lớp học và update TKB SV
         public Semester FindSemesterBySemesterId(Guid id)
         {
-            Semester a = DataProvider.Instance.Database.Semesters.Where(semesterItem=>semesterItem.Id == id).FirstOrDefault();
+            Semester a = DataProvider.Instance.Database.Semester.Where(semesterItem=>semesterItem.Id == id).FirstOrDefault();
             return a;
         }
 
         public Semester GetLastOpenningRegisterSemester()
         {
-            var listSemesterDesc = DataProvider.Instance.Database.Semesters.OrderByDescending(y => y.DisplayName).OrderByDescending(x => x.Batch);
+            var listSemesterDesc = DataProvider.Instance.Database.Semester.OrderByDescending(y => y.DisplayName).OrderByDescending(x => x.Batch);
             Semester a = listSemesterDesc.Where(semesterItem => semesterItem.CourseRegisterStatus == 1).FirstOrDefault();
             return a;
         }
         public Semester GetLastClosedRegisterSemester()
         {
-            var listSemesterDesc = DataProvider.Instance.Database.Semesters.OrderByDescending(y => y.DisplayName).OrderByDescending(x => x.Batch);
+            var listSemesterDesc = DataProvider.Instance.Database.Semester.OrderByDescending(y => y.DisplayName).OrderByDescending(x => x.Batch);
             Semester a = listSemesterDesc.Where(semesterItem => semesterItem.CourseRegisterStatus == 2).FirstOrDefault();
             return a;
         }
         public ObservableCollection<Semester> LoadListSemester()
         {
-            var a = DataProvider.Instance.Database.Semesters.OrderBy(x => x.Batch).ThenBy(y => y.DisplayName).ToList();
+            var a = DataProvider.Instance.Database.Semester.OrderBy(x => x.Batch).ThenBy(y => y.DisplayName).ToList();
             return new ObservableCollection<Semester>(a);
         }
 
         public ObservableCollection<Semester> LoadListSemestersByBatch(string batch)
         {
-            var a = DataProvider.Instance.Database.Semesters.Where(semesterItem=>semesterItem.Batch == batch).ToList();
+            var a = DataProvider.Instance.Database.Semester.Where(semesterItem=>semesterItem.Batch == batch).ToList();
             return new ObservableCollection<Semester>(a);
         }
 
@@ -56,7 +56,7 @@ namespace StudentManagement.Services
             try
             {
                 var listSemester = new List<Semester>();
-                var listCourseRegister = DataProvider.Instance.Database.CourseRegisters.Where(register => register.IdStudent == idStudent).ToList();
+                var listCourseRegister = DataProvider.Instance.Database.CourseRegister.Where(register => register.IdStudent == idStudent).ToList();
                 for (int i = 0; i < semesterStatus.Length; i++)
                 {
                     if (!semesterStatus[i])
@@ -79,7 +79,7 @@ namespace StudentManagement.Services
             try
             {
                 var listSemester = new List<Semester>();
-                var listSubjectClass = DataProvider.Instance.Database.SubjectClasses.Where(subjectClass => subjectClass.Teachers.FirstOrDefault().Id == teacher.Id).ToList();
+                var listSubjectClass = DataProvider.Instance.Database.SubjectClass.Where(subjectClass => subjectClass.Teacher.FirstOrDefault().Id == teacher.Id).ToList();
                 for (int i = 0; i < semesterStatus.Length; i++)
                 {
                     if (!semesterStatus[i])
@@ -105,7 +105,7 @@ namespace StudentManagement.Services
 
                 if (savedSemester == null)
                 {
-                    DataProvider.Instance.Database.Semesters.Add(semester);
+                    DataProvider.Instance.Database.Semester.Add(semester);
                 }
                 else
                 {

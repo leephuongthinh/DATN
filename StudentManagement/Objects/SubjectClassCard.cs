@@ -69,9 +69,9 @@ namespace StudentManagement.Objects
         public void InitCardData()
         {
             Subjects = new ObservableCollection<Subject>(SubjectServices.Instance.LoadSubjectList().Where(el => el.IsDeleted != true));
-            TrainingForms = new ObservableCollection<TrainingForm>(DataProvider.Instance.Database.TrainingForms.Where(el => el.IsDeleted != true));
-            Semesters = new ObservableCollection<Semester>(DataProvider.Instance.Database.Semesters);
-            Teachers = new ObservableCollection<Teacher>(DataProvider.Instance.Database.Teachers);
+            TrainingForms = new ObservableCollection<TrainingForm>(DataProvider.Instance.Database.TrainingForm.Where(el => el.IsDeleted != true));
+            Semesters = new ObservableCollection<Semester>(DataProvider.Instance.Database.Semester);
+            Teachers = new ObservableCollection<Teacher>(DataProvider.Instance.Database.Teacher);
             DayOfWeeks = new ObservableCollection<string>() { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật" };
         }
 

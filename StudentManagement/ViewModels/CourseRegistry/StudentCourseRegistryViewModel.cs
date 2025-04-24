@@ -142,7 +142,7 @@ namespace StudentManagement.ViewModels
             try
             {
                 UpdateSemester();
-                CurrentStudent = LoginServices.CurrentUser.Students.FirstOrDefault();
+                CurrentStudent = LoginServices.CurrentUser.Student.FirstOrDefault();
 
                 courseRegistryItemsChecked = new ObservableCollection<CourseItem>();
                 if (CurrentSemester == null || CurrentStudent == null)

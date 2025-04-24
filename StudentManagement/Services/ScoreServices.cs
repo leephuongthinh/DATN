@@ -66,7 +66,7 @@ namespace StudentManagement.Services
 
         public async Task<int> SaveComponentScoreDatabaseAsync(ComponentScoreInSetting score)
         {
-            db().ComponentScores.AddOrUpdate(ConvertScoreInSettingToComponentScore(score));
+            db().ComponentScore.AddOrUpdate(ConvertScoreInSettingToComponentScore(score));
             return await db().SaveChangesAsync();
         }
 
@@ -74,7 +74,7 @@ namespace StudentManagement.Services
         {
             foreach (var score in scores)
             {
-                db().DetailScores.AddOrUpdate(ConvertStudentDetailScoreToDetailScore(score));
+                db().DetailScore.AddOrUpdate(ConvertStudentDetailScoreToDetailScore(score));
             }
             return await db().SaveChangesAsync();
         }
@@ -85,13 +85,13 @@ namespace StudentManagement.Services
 
         public List<ComponentScore> LoadComponentScoreOfSubjectClass(Guid idSubjectClass)
         {
-            return db().ComponentScores.Where(score => score.IdSubjectClass == idSubjectClass).ToList();
+            return db().ComponentScore.Where(score => score.IdSubjectClass == idSubjectClass).ToList();
         }
 
         public List<StudentDetailScore> LoadScoreStudentInSubjectClass(Guid idSubjectClass)
         {
-            return (from components in db().ComponentScores
-                    join details in db().DetailScores
+            return (from components in db().ComponentScore
+                    join details in db().DetailScore
                     on components.Id equals details.IdComponentScore
                     select new StudentDetailScore()
                     {
@@ -107,8 +107,8 @@ namespace StudentManagement.Services
 
         public List<StudentDetailScore> LoadScoreStudentById(Guid idSubjectClass, Guid idStudent)
         {
-            return (from components in db().ComponentScores
-                    join details in db().DetailScores
+            return (from components in db().ComponentScore
+                    join details in db().DetailScore
                     on components.Id equals details.IdComponentScore
                     where components.IdSubjectClass == idSubjectClass && details.IdStudent == idStudent
                     select new StudentDetailScore()
@@ -125,7 +125,7 @@ namespace StudentManagement.Services
 
         public List<DetailScore> GetComponentScoreInDetailScoreById(Guid idComponentScore)
         {
-            return db().DetailScores.Where(score => score.IdComponentScore == idComponentScore).ToList();
+            return db().DetailScore.Where(score => score.IdComponentScore == idComponentScore).ToList();
         }
 
         #endregion
@@ -134,22 +134,22 @@ namespace StudentManagement.Services
 
         public async Task DeleteComponentScoreAsync(ComponentScoreInSetting score)
         {
-            var loadedScore = db().ComponentScores.FirstOrDefault(s => s.Id == score.Id);
-            db().ComponentScores.Remove(loadedScore);
+            var loadedScore = db().ComponentScore.FirstOrDefault(s => s.Id == score.Id);
+            db().ComponentScore.Remove(loadedScore);
             await db().SaveChangesAsync();
         }
 
         public async Task DeleteComponentScoreBySubjectClassAsync(Guid idSubjectClass)
         {
-            var scores = db().ComponentScores.Where(s => s.IdSubjectClass == idSubjectClass);
-            db().ComponentScores.RemoveRange(scores);
+            var scores = db().ComponentScore.Where(s => s.IdSubjectClass == idSubjectClass);
+            db().ComponentScore.RemoveRange(scores);
             await db().SaveChangesAsync();
         }
 
         public async Task DeleteStudentScoreByIdAsync(Guid idSubjectClass, Guid idStudent)
         {
-            var scores = db().DetailScores.Where(s => s.IdStudent == idStudent && s.ComponentScore.IdSubjectClass == idSubjectClass);
-            db().DetailScores.RemoveRange(scores);
+            var scores = db().DetailScore.Where(s => s.IdStudent == idStudent && s.ComponentScore.IdSubjectClass == idSubjectClass);
+            db().DetailScore.RemoveRange(scores);
             await db().SaveChangesAsync();
         }
 
@@ -157,9 +157,9 @@ namespace StudentManagement.Services
         {
             foreach (var score in scores)
             {
-                var studentScores = db().DetailScores.Where(ds => ds.IdComponentScore == score.Id);
-                db().DetailScores.RemoveRange(studentScores);
-                db().ComponentScores.RemoveRange(db().ComponentScores.Where(s => s.Id == score.Id));
+                var studentScores = db().DetailScore.Where(ds => ds.IdComponentScore == score.Id);
+                db().DetailScore.RemoveRange(studentScores);
+                db().ComponentScore.RemoveRange(db().ComponentScore.Where(s => s.Id == score.Id));
             }
             await db().SaveChangesAsync();
         }

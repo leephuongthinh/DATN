@@ -26,12 +26,12 @@ namespace StudentManagement.Services
 			{
 				Id = student.Id,
 				Number = number,
-				DisplayName = student.User.DisplayName,
-				Email = student.User.Email,
+				DisplayName = student.Users.DisplayName,
+				Email = student.Users.Email,
 				Faculty = student.Faculty.DisplayName,
 				TrainingForm = student.TrainingForm.DisplayName,
-				Username = student.User.Username,
-				Status = student.User.Online == true ? "Trực tuyến" : "Ngoại tuyến"
+				Username = student.Users.Username,
+				Status = student.Users.Online == true ? "Trực tuyến" : "Ngoại tuyến"
 			};
 		}
 		public Student GetStudentbyUsername(string username)
@@ -44,7 +44,7 @@ namespace StudentManagement.Services
 				return null;
 			}
 
-			return DataProvider.Instance.Database.Students
+			return DataProvider.Instance.Database.Student
 				.FirstOrDefault(s => s.IdUsers == user.Id);
 		}
 
@@ -54,23 +54,23 @@ namespace StudentManagement.Services
 
 		public Student GetFirstStudent()
 		{
-			return DataProvider.Instance.Database.Students.FirstOrDefault();
+			return DataProvider.Instance.Database.Student.FirstOrDefault();
 		}
 
 		public DbSet<Student> LoadStudentList()
 		{
-			return DataProvider.Instance.Database.Students;
+			return DataProvider.Instance.Database.Student;
 		}
 
 		public Student FindStudentByStudentId(Guid idStudent)
 		{
-			Student a = DataProvider.Instance.Database.Students.Where(studentItem => studentItem.Id == idStudent).FirstOrDefault();
+			Student a = DataProvider.Instance.Database.Student.Where(studentItem => studentItem.Id == idStudent).FirstOrDefault();
 			return a;
 		}
 
 		public Student FindStudentByUserId(Guid idUser)
 		{
-			Student a = DataProvider.Instance.Database.Students.Where(studentItem => studentItem.IdUsers == idUser).FirstOrDefault();
+			Student a = DataProvider.Instance.Database.Student.Where(studentItem => studentItem.IdUsers == idUser).FirstOrDefault();
 			return a;
 		}
 
@@ -82,7 +82,7 @@ namespace StudentManagement.Services
 
 				if (savedStudent == null)
 				{
-					DataProvider.Instance.Database.Students.Add(student);
+					DataProvider.Instance.Database.Student.Add(student);
 				}
 				else
 				{
@@ -98,14 +98,14 @@ namespace StudentManagement.Services
 			}
 
 		}
-		public Student GetStudentbyUser(User user)
+		public Student GetStudentbyUser(Users user)
 		{
 			if (user == null)
 			{
 				return null;
 			}
 
-			return DataProvider.Instance.Database.Students
+			return DataProvider.Instance.Database.Student
 				.FirstOrDefault(student => student.Username == user.Username);
 		}
 
@@ -120,12 +120,12 @@ namespace StudentManagement.Services
 		//	return DataProvider.Instance.Database.Students
 		//		.FirstOrDefault(student => student.IdUsers == user.Id);
 		//}
-		public List<Student> GetStudentsByUser(User user)
+		public List<Student> GetStudentsByUser(Users user)
 		{
 			if (user == null)
 				throw new ArgumentNullException(nameof(user));
 
-			var students = DataProvider.Instance?.Database?.Students;
+			var students = DataProvider.Instance?.Database?.Student;
 
 			if (students == null)
 				throw new InvalidOperationException("Students DbSet is not available.");
@@ -134,7 +134,7 @@ namespace StudentManagement.Services
 				.Where(student => student.IdUsers == user.Id)
 				.ToList();
 		}
-		public Student GetStudentByUser(User user)
+		public Student GetStudentByUser(Users user)
 		{
 			return GetStudentsByUser(user).FirstOrDefault();
 		}

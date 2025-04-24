@@ -12,57 +12,55 @@ namespace StudentManagement.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class SubjectClass
+    public partial class Users
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public SubjectClass()
+        public Users()
         {
-            this.AbsentCalendar = new HashSet<AbsentCalendar>();
-            this.ComponentScore = new HashSet<ComponentScore>();
-            this.CourseRegister = new HashSet<CourseRegister>();
+            this.Admin = new HashSet<Admin>();
             this.Document = new HashSet<Document>();
-            this.Examination = new HashSet<Examination>();
             this.Folder = new HashSet<Folder>();
             this.Notification = new HashSet<Notification>();
             this.Notification1 = new HashSet<Notification>();
+            this.NotificationComment = new HashSet<NotificationComment>();
+            this.NotificationInfo = new HashSet<NotificationInfo>();
+            this.Student = new HashSet<Student>();
             this.Teacher = new HashSet<Teacher>();
+            this.User_UserRole_UserInfo = new HashSet<User_UserRole_UserInfo>();
         }
     
         public System.Guid Id { get; set; }
-        public Nullable<System.Guid> IdSubject { get; set; }
-        public Nullable<System.DateTime> StartDate { get; set; }
-        public Nullable<System.DateTime> EndDate { get; set; }
-        public Nullable<System.Guid> IdSemester { get; set; }
-        public string Period { get; set; }
-        public Nullable<int> WeekDay { get; set; }
-        public Nullable<System.Guid> IdThumbnail { get; set; }
-        public Nullable<System.Guid> IdTrainingForm { get; set; }
-        public string Code { get; set; }
-        public int NumberOfStudents { get; set; }
-        public Nullable<int> MaxNumberOfStudents { get; set; }
-        public bool IsDeleted { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string DisplayName { get; set; }
+        public string Email { get; set; }
+        public Nullable<System.Guid> IdOTP { get; set; }
+        public Nullable<bool> Online { get; set; }
+        public Nullable<System.Guid> IdUserRole { get; set; }
+        public Nullable<System.Guid> IdAvatar { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<AbsentCalendar> AbsentCalendar { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<ComponentScore> ComponentScore { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<CourseRegister> CourseRegister { get; set; }
+        public virtual ICollection<Admin> Admin { get; set; }
         public virtual DatabaseImageTable DatabaseImageTable { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Document> Document { get; set; }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Examination> Examination { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Folder> Folder { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Notification> Notification { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Notification> Notification1 { get; set; }
-        public virtual Semester Semester { get; set; }
-        public virtual Subject Subject { get; set; }
-        public virtual TrainingForm TrainingForm { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<NotificationComment> NotificationComment { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<NotificationInfo> NotificationInfo { get; set; }
+        public virtual OTP OTP { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Student> Student { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Teacher> Teacher { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<User_UserRole_UserInfo> User_UserRole_UserInfo { get; set; }
+        public virtual UserRole UserRole { get; set; }
     }
 }

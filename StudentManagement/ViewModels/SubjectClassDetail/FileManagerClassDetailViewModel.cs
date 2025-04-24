@@ -82,7 +82,7 @@ namespace StudentManagement.ViewModels
         SubjectClass SubjectClassDetail { get; set; }
 
         // Current user
-        User publisher = LoginServices.CurrentUser;
+        Users publisher = LoginServices.CurrentUser;
 
         public FileManagerClassDetailViewModel(SubjectClass subjectClass)
         {

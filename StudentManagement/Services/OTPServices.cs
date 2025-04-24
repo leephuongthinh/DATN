@@ -44,10 +44,10 @@ namespace StudentManagement.Services
 			if (user.OTP != null)
 			{
 				// Nếu người dùng đã có OTP, xóa OTP cũ
-				DataProvider.Instance.Database.OTPs.Remove(user.OTP);
+				DataProvider.Instance.Database.OTP.Remove(user.OTP);
 			}
 
-			DataProvider.Instance.Database.OTPs.Add(otp);
+			DataProvider.Instance.Database.OTP.Add(otp);
 			user.OTP = otp;
 
 			await DataProvider.Instance.Database.SaveChangesAsync();
@@ -55,7 +55,7 @@ namespace StudentManagement.Services
 
 		public void DeleteOTPOverTime()
 		{
-			var listOTP = DataProvider.Instance.Database.OTPs
+			var listOTP = DataProvider.Instance.Database.OTP
 				.Where(otp => DbFunctions.DiffMinutes(otp.Time, DateTime.Now) > 5)
 				.ToList();
 
@@ -64,7 +64,7 @@ namespace StudentManagement.Services
 
 			foreach (var otp in listOTP)
 			{
-				DataProvider.Instance.Database.OTPs.Remove(otp);
+				DataProvider.Instance.Database.OTP.Remove(otp);
 				var user = UserServices.Instance.GetUserByOTP(otp);
 				if (user != null)
 				{

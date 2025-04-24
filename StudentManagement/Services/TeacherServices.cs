@@ -20,18 +20,18 @@ namespace StudentManagement.Services
 
         public DbSet<Teacher> LoadTeacherList()
         {
-            return DataProvider.Instance.Database.Teachers;
+            return DataProvider.Instance.Database.Teacher;
         }
 
         public Teacher FindTeacherByTeacherName(string teacherName)
         {
-            Teacher teacher = DataProvider.Instance.Database.Teachers.Where(teacherItem => teacherItem.User.DisplayName == teacherName).FirstOrDefault();
+            Teacher teacher = DataProvider.Instance.Database.Teacher.Where(teacherItem => teacherItem.Users.DisplayName == teacherName).FirstOrDefault();
 
             return teacher;
         }
         public Teacher FindTeacherByUserName(string userName)
         {
-            Teacher teacher = DataProvider.Instance.Database.Teachers.Where(userItem => userItem.User.Username == userName).FirstOrDefault();
+            Teacher teacher = DataProvider.Instance.Database.Teacher.Where(userItem => userItem.Users.Username == userName).FirstOrDefault();
 
             return teacher;
         }
@@ -70,7 +70,7 @@ namespace StudentManagement.Services
         /// <returns>Teacher || null</returns>
         public Teacher FindTeacherByTeacherId(Guid id)
         {
-            Teacher teacher = DataProvider.Instance.Database.Teachers.Where(teacherItem => teacherItem.Id == id).FirstOrDefault();
+            Teacher teacher = DataProvider.Instance.Database.Teacher.Where(teacherItem => teacherItem.Id == id).FirstOrDefault();
 
             return teacher;
         }
@@ -88,7 +88,7 @@ namespace StudentManagement.Services
                 if (savedUser == null)
                 {
                     
-                    DataProvider.Instance.Database.Teachers.Add(teacher);
+                    DataProvider.Instance.Database.Teacher.Add(teacher);
                 }
                 else
                 {
@@ -123,14 +123,14 @@ namespace StudentManagement.Services
         {
             Teacher savedTeacher = FindTeacherByTeacherId(teacher.Id);
 
-            DataProvider.Instance.Database.Teachers.Remove(savedTeacher);
+            DataProvider.Instance.Database.Teacher.Remove(savedTeacher);
 
             DataProvider.Instance.Database.SaveChanges();
         }
 
-        public Teacher GetTeacherbyUser(User user)
+        public Teacher GetTeacherbyUser(Users user)
         {
-            return DataProvider.Instance.Database.Teachers.FirstOrDefault(teacher => teacher.IdUsers == user.Id);
+            return DataProvider.Instance.Database.Teacher.FirstOrDefault(teacher => teacher.IdUsers == user.Id);
         }
 
         /// <summary>

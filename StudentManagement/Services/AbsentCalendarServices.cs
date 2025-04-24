@@ -69,18 +69,18 @@ namespace StudentManagement.Services
 
         public async Task SaveCalendarToDatabaseAsync(AbsentAndMakeUpItem item)
         {
-            db().AbsentCalendars.AddOrUpdate(ConvertAbsentItemToAbsentCalendar(item));
+            db().AbsentCalendar.AddOrUpdate(ConvertAbsentItemToAbsentCalendar(item));
             await db().SaveChangesAsync();
         }
         public async Task SaveCalendarToNotification(AbsentAndMakeUpItem item)
         {
-            db().Notifications.AddOrUpdate(ConvertAbsentItemToNotification(item));
+            db().Notification.AddOrUpdate(ConvertAbsentItemToNotification(item));
             await db().SaveChangesAsync();
         }
         public async Task SaveCalendarToNotificationInfo(AbsentAndMakeUpItem item)
         {
             var notification = NotificationServices.Instance.FindNotificationByNotificationId(item.Id);
-            var listCourseRegister = notification.SubjectClass.CourseRegisters.ToList();
+            var listCourseRegister = notification.SubjectClass.CourseRegister.ToList();
             foreach (var courseRegister in listCourseRegister)
             {
                 var notificationInfo = new NotificationInfo()
@@ -90,7 +90,7 @@ namespace StudentManagement.Services
                     IdUserReceiver = courseRegister.Student.IdUsers,
                     IsRead = false,
                 };
-                db().NotificationInfoes.AddOrUpdate(notificationInfo);
+                db().NotificationInfo.AddOrUpdate(notificationInfo);
             }
             await db().SaveChangesAsync();
         }
@@ -101,11 +101,11 @@ namespace StudentManagement.Services
 
         public List<AbsentCalendar> GetListAbsentCalendars(Guid idSubjectClass)
         {
-            return db().AbsentCalendars.Where(item => item.IdSubjectClass == idSubjectClass).ToList();
+            return db().AbsentCalendar.Where(item => item.IdSubjectClass == idSubjectClass).ToList();
         }
         public AbsentCalendar GetAbsentCalenderByIdAbsentCalender(Guid idAbsentCalender)
         {
-            return db().AbsentCalendars.FirstOrDefault(item => item.Id == idAbsentCalender);
+            return db().AbsentCalendar.FirstOrDefault(item => item.Id == idAbsentCalender);
         }
 
         #endregion
@@ -114,8 +114,8 @@ namespace StudentManagement.Services
 
         public async Task<int> DeleteAbsentCalendarAsync(Guid? idSubjectClass, DateTime date)
         {
-            var events = db().AbsentCalendars.Where(calendar => calendar.IdSubjectClass == idSubjectClass && calendar.Date == date);
-            db().AbsentCalendars.RemoveRange(events);
+            var events = db().AbsentCalendar.Where(calendar => calendar.IdSubjectClass == idSubjectClass && calendar.Date == date);
+            db().AbsentCalendar.RemoveRange(events);
 
             return await db().SaveChangesAsync();
         }

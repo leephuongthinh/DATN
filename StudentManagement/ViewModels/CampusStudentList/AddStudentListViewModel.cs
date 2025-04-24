@@ -19,8 +19,8 @@ namespace StudentManagement.ViewModels
         private UserCard _currentStudent;
         public UserCard CurrentStudent { get => _currentStudent; set => _currentStudent = value; }
 
-        private User _newUser;
-        public User NewUser { get => _newUser; set => _newUser = value; }
+        private Users _newUser;
+        public Users NewUser { get => _newUser; set => _newUser = value; }
 
         private ObservableCollection<string> _trainings;
         public ObservableCollection<string> Trainings { get => _trainings; set => _trainings = value; }
@@ -253,14 +253,14 @@ namespace StudentManagement.ViewModels
                     return;
                 }
 
-                NewUser = new User();
+                NewUser = new Users();
 
                 NewUser.Id = Guid.NewGuid();
                 NewUser.Username = Username;
                 NewUser.Password = SHA256Cryptography.Instance.EncryptString(Password);
                 NewUser.DisplayName = Convert.ToString(InfoSource.First().Content);
                 NewUser.Email = Convert.ToString(InfoSource[1].Content);
-                NewUser.UserRole = DataProvider.Instance.Database.UserRoles.Where(x => x.Role == SelectedRole).FirstOrDefault();
+                NewUser.UserRole = DataProvider.Instance.Database.UserRole.Where(x => x.Role == SelectedRole).FirstOrDefault();
                 NewUser.IdUserRole = NewUser.UserRole.Id;
 
                 UserServices.Instance.SaveUserToDatabase(NewUser);
@@ -271,12 +271,12 @@ namespace StudentManagement.ViewModels
                     newStudent.IdUsers = NewUser.Id;
                     newStudent.Id = Guid.NewGuid();
                     string temp = Convert.ToString(InfoSource[2].Content);
-                    newStudent.Faculty = DataProvider.Instance.Database.Faculties.Where(x => x.DisplayName == temp).FirstOrDefault();
+                    newStudent.Faculty = DataProvider.Instance.Database.Faculty.Where(x => x.DisplayName == temp).FirstOrDefault();
                     temp = Convert.ToString(InfoSource[3].Content);
-                    newStudent.TrainingForm = DataProvider.Instance.Database.TrainingForms.Where(x => x.DisplayName == temp).FirstOrDefault();
+                    newStudent.TrainingForm = DataProvider.Instance.Database.TrainingForm.Where(x => x.DisplayName == temp).FirstOrDefault();
                     newStudent.IdFaculty = newStudent.Faculty.Id;
                     newStudent.IdTrainingForm = newStudent.TrainingForm.Id;
-                    newStudent.User = NewUser;
+                    newStudent.Users = NewUser;
 
                     StudentServices.Instance.SaveStudentToDatabase(newStudent);
                 }
@@ -286,9 +286,9 @@ namespace StudentManagement.ViewModels
                     newTeacher.IdUsers = NewUser.Id;
                     newTeacher.Id = Guid.NewGuid();
                     string temp = Convert.ToString(InfoSource[2].Content);
-                    newTeacher.Faculty = DataProvider.Instance.Database.Faculties.Where(x => x.DisplayName == temp).FirstOrDefault();
+                    newTeacher.Faculty = DataProvider.Instance.Database.Faculty.Where(x => x.DisplayName == temp).FirstOrDefault();
                     newTeacher.IdFaculty = newTeacher.Faculty.Id;
-                    newTeacher.User = NewUser;
+                    newTeacher.Users = NewUser;
 
                     TeacherServices.Instance.SaveTeacherToDatabase(newTeacher);
                 }
@@ -297,7 +297,7 @@ namespace StudentManagement.ViewModels
                     Admin newAdmin = new Admin();
                     newAdmin.IdUsers = NewUser.Id;
                     newAdmin.Id = Guid.NewGuid();
-                    newAdmin.User = NewUser;
+                    newAdmin.Users = NewUser;
 
                     AdminServices.Instance.SaveAdminToDatabase(newAdmin);
 
@@ -312,7 +312,7 @@ namespace StudentManagement.ViewModels
                         newInfo.IdUser = NewUser.Id;
                         newInfo.IdUserRole_Info = item.Id;
                         newInfo.UserRole_UserInfo = item;
-                        newInfo.User = NewUser;
+                        newInfo.Users = NewUser;
                         newInfo.Content = null;
                         UserUserRoleUserInfoServices.Instance.SaveUserInfoToDatabase(newInfo);
                     }

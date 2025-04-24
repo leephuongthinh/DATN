@@ -89,7 +89,7 @@ namespace StudentManagement.ViewModels
                     break;
                 case "Giáo viên":
                     List<SubjectClass> listSubjectClass = SubjectClassServices.Instance.LoadSubjectClassListBySemesterId(SelectedSemester.Id).ToList();
-                    listSubjectClass = new List<SubjectClass>(listSubjectClass.Where(subjectClass => subjectClass.Teachers.Contains(CurrentTeacher)));
+                    listSubjectClass = new List<SubjectClass>(listSubjectClass.Where(subjectClass => subjectClass.Teacher.Contains(CurrentTeacher)));
                     foreach (SubjectClass item in listSubjectClass)
                     {
                         ScheduleItem temp = new ScheduleItem(item);
@@ -101,7 +101,7 @@ namespace StudentManagement.ViewModels
 
         public ObservableCollection<Semester> LoadListSemester()
         {
-            User currentUser = LoginServices.CurrentUser;
+            Users currentUser = LoginServices.CurrentUser;
             switch(currentUser.UserRole.Role)
             {
                 case "Học viên":

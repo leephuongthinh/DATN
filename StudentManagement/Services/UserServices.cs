@@ -17,20 +17,20 @@ namespace StudentManagement.Services
 
         public UserServices() { }
 
-        public User GetUserInfo()
+        public Users GetUserInfo()
         {
-            User a = DataProvider.Instance.Database.Users.FirstOrDefault();
+            Users a = DataProvider.Instance.Database.Users.FirstOrDefault();
             return a;
         }
-        public User GetUserById(Guid id)
+        public Users GetUserById(Guid id)
         {
-            User a = DataProvider.Instance.Database.Users.FirstOrDefault(user=>user.Id==id);
+            Users a = DataProvider.Instance.Database.Users.FirstOrDefault(user=>user.Id==id);
             return a;
         }
 
-        public User FindUserByUsername(string username)
+        public Users FindUserByUsername(string username)
         {
-            User user = DataProvider.Instance.Database.Users.FirstOrDefault(account => account.Username == username);
+            Users user = DataProvider.Instance.Database.Users.FirstOrDefault(account => account.Username == username);
 
             return user;
         }
@@ -49,11 +49,11 @@ namespace StudentManagement.Services
         //    var user = GetUserById(id);
         //    return user.Faculty.DisplayName;
         //}
-        public List<User> GetUserByGmail(string email)
+        public List<Users> GetUserByGmail(string email)
         {
             return DataProvider.Instance.Database.Users.Where(user => user.Email.Equals(email)).ToList();
         }
-        public User GetUserByOTP(OTP otp)
+        public Users GetUserByOTP(OTP otp)
         {
             return DataProvider.Instance.Database.Users.FirstOrDefault(tmpUser => tmpUser.IdOTP == otp.Id);
         }
@@ -73,17 +73,17 @@ namespace StudentManagement.Services
             return false;
         }
 
-        public User FindUserbyUserId(Guid id)
+        public Users FindUserbyUserId(Guid id)
         {
-            User a = DataProvider.Instance.Database.Users.Where(userItem => userItem.Id == id).FirstOrDefault();
+            Users a = DataProvider.Instance.Database.Users.Where(userItem => userItem.Id == id).FirstOrDefault();
             return a;
         }
 
-        public bool SaveUserToDatabase(User user)
+        public bool SaveUserToDatabase(Users user)
         {
             try
             {
-                User savedUser = FindUserbyUserId(user.Id);
+                Users savedUser = FindUserbyUserId(user.Id);
 
                 if (savedUser == null)
                 {
@@ -117,7 +117,7 @@ namespace StudentManagement.Services
             DataProvider.Instance.Database.SaveChanges();
             return true;
         }
-        public void ChangePassWordOfCurrentUser(string passWord, User user)
+        public void ChangePassWordOfCurrentUser(string passWord, Users user)
         {
             user.Password = SHA256Cryptography.Instance.EncryptString(passWord);
             DataProvider.Instance.Database.SaveChanges();

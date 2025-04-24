@@ -142,7 +142,7 @@ namespace StudentManagement.ViewModels
         public void LoadSemesters()
         {
             SelectedSemester = null;
-            Semesters = new ObservableCollection<Semester>(DataProvider.Instance.Database.Semesters);
+            Semesters = new ObservableCollection<Semester>(DataProvider.Instance.Database.Semester);
         }
 
         public void LoadSubjectClassListBySemester()
@@ -169,7 +169,7 @@ namespace StudentManagement.ViewModels
                     case "Giáo viên":
                         List<SubjectClass> listSubjectClassTeacher = SubjectClassServices.Instance.MinimizeSubjectClassListBySemesterStatus(subjectClasses.ToList(), new bool[] { false, true, true });
                         Teacher currentTeacher = TeacherServices.Instance.GetTeacherbyUser(LoginServices.CurrentUser);
-                        return listSubjectClassTeacher.Where(subjectClass => subjectClass.Teachers.FirstOrDefault() == currentTeacher).ToList();
+                        return listSubjectClassTeacher.Where(subjectClass => subjectClass.Teacher.FirstOrDefault() == currentTeacher).ToList();
                     default:
                         Student currentStudent = StudentServices.Instance.FindStudentByUserId(LoginServices.CurrentUser.Id);
                         List<SubjectClass> listSubjectClassStudent = CourseRegisterServices.Instance.LoadCourseRegisteredListByStudentId(currentStudent.Id).ToList();
@@ -189,7 +189,7 @@ namespace StudentManagement.ViewModels
         {
             var tmp = StoredSubjectClassCards.Where(x => !IsFirstSearchButtonEnabled ?
                                                     vietnameseStringNormalizer.Normalize(x?.SelectedSubject?.DisplayName + " " + x?.Code).Contains(vietnameseStringNormalizer.Normalize(SearchQuery))
-                                                    : vietnameseStringNormalizer.Normalize(x?.SelectedTeacher?.User?.DisplayName).Contains(vietnameseStringNormalizer.Normalize(SearchQuery)));
+                                                    : vietnameseStringNormalizer.Normalize(x?.SelectedTeacher?.Users?.DisplayName).Contains(vietnameseStringNormalizer.Normalize(SearchQuery)));
             SubjectClassCards.Clear();
             foreach (SubjectClassCard card in tmp)
                 if (card.SelectedSemester == SelectedSemester || SelectedSemester == null)

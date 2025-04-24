@@ -170,7 +170,7 @@ namespace StudentManagement.ViewModels
 
                         foreach (DataRow student in data.Rows)
                         {
-                            User NewUser = new User();
+                            Users NewUser = new Users();
                             string role = student[0].ToString();
 
                             NewUser.Id = Guid.NewGuid();
@@ -178,7 +178,7 @@ namespace StudentManagement.ViewModels
                             NewUser.Password = SHA256Cryptography.Instance.EncryptString(student[6].ToString());
                             NewUser.DisplayName = student[2].ToString();
                             NewUser.Email = student[3].ToString();
-                            NewUser.UserRole = DataProvider.Instance.Database.UserRoles.Where(x => x.Role == role).FirstOrDefault();
+                            NewUser.UserRole = DataProvider.Instance.Database.UserRole.Where(x => x.Role == role).FirstOrDefault();
                             NewUser.IdUserRole = NewUser.UserRole.Id;
 
                             UserServices.Instance.SaveUserToDatabase(NewUser);
@@ -190,12 +190,12 @@ namespace StudentManagement.ViewModels
                                 newStudent.IdUsers = NewUser.Id;
                                 newStudent.Id = Guid.NewGuid();
                                 string temp = student[4].ToString();
-                                newStudent.Faculty = DataProvider.Instance.Database.Faculties.Where(x => x.DisplayName == temp).FirstOrDefault();
+                                newStudent.Faculty = DataProvider.Instance.Database.Faculty.Where(x => x.DisplayName == temp).FirstOrDefault();
                                 temp = student[5].ToString();
-                                newStudent.TrainingForm = DataProvider.Instance.Database.TrainingForms.Where(x => x.DisplayName == temp).FirstOrDefault();
+                                newStudent.TrainingForm = DataProvider.Instance.Database.TrainingForm.Where(x => x.DisplayName == temp).FirstOrDefault();
                                 newStudent.IdFaculty = newStudent.Faculty.Id;
                                 newStudent.IdTrainingForm = newStudent.TrainingForm.Id;
-                                newStudent.User = NewUser;
+                                newStudent.Users = NewUser;
 
                                 StudentServices.Instance.SaveStudentToDatabase(newStudent);
                                 UserDatabase.Add(new UserCard(newStudent));
@@ -208,9 +208,9 @@ namespace StudentManagement.ViewModels
                                 newTeacher.IdUsers = NewUser.Id;
                                 newTeacher.Id = Guid.NewGuid();
                                 string temp = student[4].ToString();
-                                newTeacher.Faculty = DataProvider.Instance.Database.Faculties.Where(x => x.DisplayName == temp).FirstOrDefault();
+                                newTeacher.Faculty = DataProvider.Instance.Database.Faculty.Where(x => x.DisplayName == temp).FirstOrDefault();
                                 newTeacher.IdFaculty = newTeacher.Faculty.Id;
-                                newTeacher.User = NewUser;
+                                newTeacher.Users = NewUser;
 
                                 TeacherServices.Instance.SaveTeacherToDatabase(newTeacher);
                                 UserDatabase.Add(new UserCard(newTeacher));
@@ -226,7 +226,7 @@ namespace StudentManagement.ViewModels
                                     newInfo.IdUser = NewUser.Id;
                                     newInfo.IdUserRole_Info = item.Id;
                                     newInfo.UserRole_UserInfo = item;
-                                    newInfo.User = NewUser;
+                                    newInfo.Users = NewUser;
                                     newInfo.Content = null;
                                     UserUserRoleUserInfoServices.Instance.SaveUserInfoToDatabase(newInfo);
                                 }

@@ -12,14 +12,15 @@ namespace StudentManagement.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class User_UserRole_UserInfo
+    public partial class Security
     {
-        public System.Guid Id { get; set; }
-        public Nullable<System.Guid> IdUser { get; set; }
-        public Nullable<System.Guid> IdUserRole_Info { get; set; }
-        public string Content { get; set; }
-    
-        public virtual Users Users { get; set; }
-        public virtual UserRole_UserInfo UserRole_UserInfo { get; set; }
+        public int Id { get; set; }
+        public string LicenseKey { get; set; }
+        public string Token { get; set; }
+        public string LicenseType { get; set; }
+        public System.DateTime ActivationTime { get; set; }
+        public System.DateTime ExpiryTime { get; set; }
+        public System.DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; }
     }
 }

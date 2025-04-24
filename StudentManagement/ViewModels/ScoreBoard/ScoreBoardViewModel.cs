@@ -100,7 +100,7 @@ namespace StudentManagement.ViewModels
             if (LoginServices.CurrentUser == null)
                 return;
 
-            var name = DataProvider.Instance.Database.Students.Where(x => x.Id == IdStudent).FirstOrDefault().User.DisplayName;
+            var name = DataProvider.Instance.Database.Student.Where(x => x.Id == IdStudent).FirstOrDefault().Users.DisplayName;
             OverviewScoreboardItem = new OverviewScoreboardViewModel(GPA, 90, TotalCredit, name);
             MainViewModel.Instance.DialogViewModel = OverviewScoreboardItem;
             MainViewModel.Instance.IsOpen = true;
@@ -116,7 +116,7 @@ namespace StudentManagement.ViewModels
             LoginServices.UpdateCurrentUser += LoginServices_UpdateCurrentUser;
             if (LoginServices.CurrentUser != null)
             {
-                var student = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == LoginServices.CurrentUser.Id).FirstOrDefault();
+                var student = DataProvider.Instance.Database.Student.Where(x => x.IdUsers == LoginServices.CurrentUser.Id).FirstOrDefault();
                 if (student == null)
                     return;
                 IdStudent = student.Id;
@@ -138,7 +138,7 @@ namespace StudentManagement.ViewModels
 
             try
             {
-                List<CourseRegister> ListCourses = DataProvider.Instance.Database.CourseRegisters.Where(x => x.IdStudent == IdStudent && x.SubjectClass.IsDeleted != true).ToList();
+                List<CourseRegister> ListCourses = DataProvider.Instance.Database.CourseRegister.Where(x => x.IdStudent == IdStudent && x.SubjectClass.IsDeleted != true).ToList();
                 if (ListCourses == null)
                 {
                     return;
@@ -173,10 +173,10 @@ namespace StudentManagement.ViewModels
 
                         double gpa = 0;
 
-                        var ListComponentScore = DataProvider.Instance.Database.ComponentScores.Where(x => x.IdSubjectClass == item.IdSubjectClass).ToList();
+                        var ListComponentScore = DataProvider.Instance.Database.ComponentScore.Where(x => x.IdSubjectClass == item.IdSubjectClass).ToList();
                         foreach (var component in ListComponentScore)
                         {
-                            var score = DataProvider.Instance.Database.DetailScores.FirstOrDefault(x => x.IdComponentScore == component.Id && x.IdStudent == IdStudent);
+                            var score = DataProvider.Instance.Database.DetailScore.FirstOrDefault(x => x.IdComponentScore == component.Id && x.IdStudent == IdStudent);
                             if (score == null || score?.Score == null)
                                 continue;
                             gpa += (double)score.Score * (double)component.ContributePercent / 100;
@@ -187,7 +187,7 @@ namespace StudentManagement.ViewModels
                         GPA += gpa * (int)item.SubjectClass.Subject.Credit;
                         semesterGPA += gpa * (int)item.SubjectClass.Subject.Credit;
 
-                        var teacher = item.SubjectClass.Teachers.FirstOrDefault();
+                        var teacher = item.SubjectClass.Teacher.FirstOrDefault();
                         string nameTeacher = null;
                         if (teacher != null)
                             nameTeacher = DataProvider.Instance.Database.Users.Where(x => x.Id == teacher.IdUsers).FirstOrDefault().DisplayName;
@@ -201,7 +201,7 @@ namespace StudentManagement.ViewModels
                     else
                         semesterGPA = semesterGPA / semesterCredit;
 
-                    var CurrentSemester = DataProvider.Instance.Database.Semesters.Where(x => x.Id == id).FirstOrDefault();
+                    var CurrentSemester = DataProvider.Instance.Database.Semester.Where(x => x.Id == id).FirstOrDefault();
                     if (CurrentSemester != null)
                         DatabaseSemester.Add(new SemesterDataGrid(id, CurrentSemester.DisplayName, CurrentSemester.Batch, semesterGPA, 0, TempScore, null));
                 }
@@ -227,7 +227,7 @@ namespace StudentManagement.ViewModels
 
         private void LoginServices_UpdateCurrentUser(object sender, LoginServices.LoginEvent e)
         {
-            var student = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == LoginServices.CurrentUser.Id).FirstOrDefault();
+            var student = DataProvider.Instance.Database.Student.Where(x => x.IdUsers == LoginServices.CurrentUser.Id).FirstOrDefault();
             if (student == null)
                 return;
             IdStudent = student.Id;

@@ -36,14 +36,14 @@ namespace StudentManagement.Services
         }
         public List<NotificationInfo> GetNotificationInfoByIdNotificationAndUserId(Guid id, Guid idNotification)
         {
-            var notificationInfo = DataProvider.Instance.Database.NotificationInfoes.Where(notificationDetail => notificationDetail.IdUserReceiver == id && notificationDetail.IdNotification == idNotification).ToList();
+            var notificationInfo = DataProvider.Instance.Database.NotificationInfo.Where(notificationDetail => notificationDetail.IdUserReceiver == id && notificationDetail.IdNotification == idNotification).ToList();
             return notificationInfo;
         }
 
         public ObservableCollection<NotificationCard> LoadNotificationInBadgeByIdUser(Guid idUser)
         {
             ObservableCollection<NotificationCard> cardInBadge = new ObservableCollection<NotificationCard>();
-            var notificationList = DataProvider.Instance.Database.NotificationInfoes.Where(notificationInfo => notificationInfo.IdUserReceiver == idUser).Select(notificationInfo => notificationInfo.Notification).ToList();
+            var notificationList = DataProvider.Instance.Database.NotificationInfo.Where(notificationInfo => notificationInfo.IdUserReceiver == idUser).Select(notificationInfo => notificationInfo.Notification).ToList();
             foreach (Notification notification in notificationList)
             {
                 NotificationCard notificationCard = new NotificationCard(ConvertNotificationAndIdUserToNotificationCard(notification, idUser));
@@ -57,9 +57,9 @@ namespace StudentManagement.Services
             ObservableCollection<NotificationCard> notificationCards = new ObservableCollection<NotificationCard>();
             List<Notification> notificationList = new List<Notification>();
             if (UserServices.Instance.GetUserById(id).UserRole.Role.Contains("Admin"))
-                notificationList = DataProvider.Instance.Database.Notifications.Where(notification => notification.NotificationType!=null).ToList();
+                notificationList = DataProvider.Instance.Database.Notification.Where(notification => notification.NotificationType!=null).ToList();
             else
-                notificationList = DataProvider.Instance.Database.NotificationInfoes.Where(notificationInfo => notificationInfo.IdUserReceiver == id).Select(notificationInfo => notificationInfo.Notification).ToList();
+                notificationList = DataProvider.Instance.Database.NotificationInfo.Where(notificationInfo => notificationInfo.IdUserReceiver == id).Select(notificationInfo => notificationInfo.Notification).ToList();
             foreach (Notification notification in notificationList)
             {
                 NotificationCard notificationCard = new NotificationCard(ConvertNotificationAndIdUserToNotificationCard(notification, id));
@@ -76,20 +76,20 @@ namespace StudentManagement.Services
                 Content = notificationCard.Content,
                 Time = notificationCard.Time,
                 IdPoster = notificationCard.IdPoster,
-                NotificationType = DataProvider.Instance.Database.NotificationTypes.Where(type => type.Content.Contains(notificationCard.Type)).FirstOrDefault(),
+                NotificationType = DataProvider.Instance.Database.NotificationType.Where(type => type.Content.Contains(notificationCard.Type)).FirstOrDefault(),
             };
             return notification;
         }
         public void AddNotificationByNotificationCard(NotificationCard notificationCard)
         {
             Notification notification = ConvertNotificationCardToNotification(notificationCard);
-            DataProvider.Instance.Database.Notifications.Add(notification);
+            DataProvider.Instance.Database.Notification.Add(notification);
             DataProvider.Instance.Database.SaveChanges();
             AddNotificationInfoByNotificationType(notification);
         }
         public void AddNotificationInfoByNotificationType(Notification notification)
         {
-            List<User> users = new List<User>();
+            List<Users> users = new List<Users>();
             switch (notification.NotificationType.Content)
             {
                 case "Thông báo chung":
@@ -121,7 +121,7 @@ namespace StudentManagement.Services
                     IdNotification = notification.Id,
                     IdUserReceiver = user.Id,
                 };
-                DataProvider.Instance.Database.NotificationInfoes.Add(notificationInfo);
+                DataProvider.Instance.Database.NotificationInfo.Add(notificationInfo);
             }
             DataProvider.Instance.Database.SaveChanges();
         }
@@ -135,30 +135,30 @@ namespace StudentManagement.Services
             updateNotification.Content = notificationCard.Content;
             updateNotification.IdSubjectClass = notificationCard.IdSubjectClass;
             updateNotification.IdPoster = notificationCard.IdPoster;
-            updateNotification.NotificationType = DataProvider.Instance.Database.NotificationTypes.Where(type => type.Content.Contains(notificationCard.Type)).FirstOrDefault();
+            updateNotification.NotificationType = DataProvider.Instance.Database.NotificationType.Where(type => type.Content.Contains(notificationCard.Type)).FirstOrDefault();
             updateNotification.Time = notificationCard.Time;
         }
 
         public void UpdateNotificationByNotificationCard(NotificationCard notificationCard)
         {
-            Notification updateNotification = DataProvider.Instance.Database.Notifications.Where(notificationItem => notificationItem.Id == notificationCard.Id).FirstOrDefault();
+            Notification updateNotification = DataProvider.Instance.Database.Notification.Where(notificationItem => notificationItem.Id == notificationCard.Id).FirstOrDefault();
             CopyNotificationCardToNotification(notificationCard, updateNotification);
             DataProvider.Instance.Database.SaveChanges();
         }
 
         public Notification FindNotificationByNotificationId(Guid idNotification)
         {
-            return DataProvider.Instance.Database.Notifications.Where(notification => notification.Id == idNotification).FirstOrDefault();
+            return DataProvider.Instance.Database.Notification.Where(notification => notification.Id == idNotification).FirstOrDefault();
         }
         public void DeleteNotificationByNotificationCard(NotificationCard notificationCard)
         {
             var notification = FindNotificationByNotificationId(notificationCard.Id);
-            List<NotificationInfo> listNotificationInfo = DataProvider.Instance.Database.NotificationInfoes.Where(notificationInfo => notificationInfo.IdNotification == notification.Id).ToList();
+            List<NotificationInfo> listNotificationInfo = DataProvider.Instance.Database.NotificationInfo.Where(notificationInfo => notificationInfo.IdNotification == notification.Id).ToList();
             foreach (var notificationInfo in listNotificationInfo)
             {
-                DataProvider.Instance.Database.NotificationInfoes.Remove(notificationInfo);
+                DataProvider.Instance.Database.NotificationInfo.Remove(notificationInfo);
             }
-            DataProvider.Instance.Database.Notifications.Remove(notification);
+            DataProvider.Instance.Database.Notification.Remove(notification);
             DataProvider.Instance.Database.SaveChanges();
         }
         public void DeleteNotificationInfoByNotificationCardAndIdUser(NotificationCard notificationCard, Guid idUser)
@@ -166,7 +166,7 @@ namespace StudentManagement.Services
             var notificationInfo = GetNotificationInfoByIdNotificationAndUserId(idUser, notificationCard.Id);
             if (notificationInfo.Count == 0)
                 return;
-            DataProvider.Instance.Database.NotificationInfoes.Remove(notificationInfo.FirstOrDefault());
+            DataProvider.Instance.Database.NotificationInfo.Remove(notificationInfo.FirstOrDefault());
             DataProvider.Instance.Database.SaveChanges();
         }
         public void MarkAsReadNotificationInfoByNotificationCardAndIdUser(NotificationCard notificationCard, Guid idUser)
@@ -187,7 +187,7 @@ namespace StudentManagement.Services
         }
         public List<NotificationInfo> FindNotificationInfoByIdUser(Guid idUser)
         {
-            return DataProvider.Instance.Database.NotificationInfoes.Where(notificationInfo => notificationInfo.IdUserReceiver == idUser).ToList();
+            return DataProvider.Instance.Database.NotificationInfo.Where(notificationInfo => notificationInfo.IdUserReceiver == idUser).ToList();
         }
         public void MarkAllAsReadNotificationInfoByIdUser(Guid idUser)
         {

@@ -242,7 +242,7 @@ namespace StudentManagement.ViewModels
             Period = CurrentItem.Period;
             WeekDay = DayOfWeeks[(int)CurrentItem.WeekDay];
             MaxOfRegister = Convert.ToString(CurrentItem.MaxNumberOfStudents);
-            SelectedTeacher = CurrentItem.Teachers.FirstOrDefault();
+            SelectedTeacher = CurrentItem.Teacher.FirstOrDefault();
         }
 
         public void InitCommand()
@@ -283,12 +283,12 @@ namespace StudentManagement.ViewModels
 
             if (temp != null)
             {
-                CurrentItem.Teachers = temp.Teachers;
+                CurrentItem.Teacher = temp.Teacher;
             }
             try
             {
-                CurrentItem.Teachers.Clear();
-                CurrentItem.Teachers.Add(SelectedTeacher);
+                CurrentItem.Teacher.Clear();
+                CurrentItem.Teacher.Add(SelectedTeacher);
                 CurrentItem.MainTeacher = SelectedTeacher;
 
                 SubjectClass tempSubjectClass = CurrentItem.ConvertToSubjectClass();

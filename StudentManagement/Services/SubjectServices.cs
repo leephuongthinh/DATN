@@ -21,12 +21,12 @@ namespace StudentManagement.Services
 
         public DbSet<Subject> LoadSubjectList()
         {
-            return DataProvider.Instance.Database.Subjects;
+            return DataProvider.Instance.Database.Subject;
         }
 
         public Subject FindSubjectBySubjectName(string subjectName)
         {
-            Subject subject = DataProvider.Instance.Database.Subjects.Where(subjectItem => subjectItem.DisplayName == subjectName).FirstOrDefault();
+            Subject subject = DataProvider.Instance.Database.Subject.Where(subjectItem => subjectItem.DisplayName == subjectName).FirstOrDefault();
 
             return subject;
         }
@@ -65,7 +65,7 @@ namespace StudentManagement.Services
         /// <returns>Subject || null</returns>
         public Subject FindSubjectBySubjectId(Guid id)
         {
-            Subject subject = DataProvider.Instance.Database.Subjects.Where(subjectItem => subjectItem.Id == id).FirstOrDefault();
+            Subject subject = DataProvider.Instance.Database.Subject.Where(subjectItem => subjectItem.Id == id).FirstOrDefault();
 
             return subject;
         }
@@ -78,7 +78,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                DataProvider.Instance.Database.Subjects.AddOrUpdate(subject);
+                DataProvider.Instance.Database.Subject.AddOrUpdate(subject);
                 DataProvider.Instance.Database.SaveChanges();
                 return true;
             }

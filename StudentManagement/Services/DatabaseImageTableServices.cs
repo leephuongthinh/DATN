@@ -39,7 +39,7 @@ namespace StudentManagement.Services
         public async Task<Guid> SaveImageToDatabaseAsync(string image)
         {
             var img = ConvertImageToDatabaseImage(image);
-            db().DatabaseImageTables.AddOrUpdate(img);
+            db().DatabaseImageTable.AddOrUpdate(img);
             await db().SaveChangesAsync();
             return img.Id;
         }
@@ -50,12 +50,12 @@ namespace StudentManagement.Services
 
         public async Task<DatabaseImageTable> GetImageByIdAsync(Guid? id)
         {
-            return await db().DatabaseImageTables.FirstOrDefaultAsync(t => t.Id == id);
+            return await db().DatabaseImageTable.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public DatabaseImageTable GetFirstDatabaseImageTable()
         {
-            return db().DatabaseImageTables.FirstOrDefault();
+            return db().DatabaseImageTable.FirstOrDefault();
         }
 
         #endregion
@@ -64,8 +64,8 @@ namespace StudentManagement.Services
 
         public async Task DeleteImageAsync(Guid? id)
         {
-            var img = await db().DatabaseImageTables.FirstOrDefaultAsync(t => t.Id == id);
-            db().DatabaseImageTables.Remove(img);
+            var img = await db().DatabaseImageTable.FirstOrDefaultAsync(t => t.Id == id);
+            db().DatabaseImageTable.Remove(img);
             await db().SaveChangesAsync();
         }
 

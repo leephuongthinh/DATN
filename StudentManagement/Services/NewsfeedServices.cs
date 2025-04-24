@@ -65,7 +65,7 @@ namespace StudentManagement.Services
         }
         public Notification ConvertPostCommentToNotification(PostComment comment)
         {
-            NotificationComment notificationComment = db().NotificationComments.FirstOrDefault(noticeComment=>noticeComment.Id == comment.Id);
+            NotificationComment notificationComment = db().NotificationComment.FirstOrDefault(noticeComment=>noticeComment.Id == comment.Id);
             return new Notification()
             {
                 Id = comment.Id,
@@ -80,7 +80,7 @@ namespace StudentManagement.Services
         public NotificationInfo ConvertPostCommentToNotificationInfo(PostComment comment)
         {
             Notification notification = NotificationServices.Instance.FindNotificationByNotificationId(comment.Id);
-            NotificationComment notificationComment = db().NotificationComments.FirstOrDefault(noticeComment=> noticeComment.Id == comment.Id);
+            NotificationComment notificationComment = db().NotificationComment.FirstOrDefault(noticeComment=> noticeComment.Id == comment.Id);
             return new NotificationInfo()
             {
                 Id = Guid.NewGuid(),
@@ -92,7 +92,7 @@ namespace StudentManagement.Services
 
         public PostComment ConvertNotificationCommentToPostComment(NotificationComment comment)
         {
-            User user = UserServices.Instance.GetUserById((Guid)comment.IdUserComment);
+            Users user = UserServices.Instance.GetUserById((Guid)comment.IdUserComment);
             return new PostComment(comment.Id, (Guid)comment.IdNotification, (Guid)comment.IdUserComment, user.DatabaseImageTable.Image, user.DisplayName, comment.Content, comment.Time);
         }
 
@@ -102,14 +102,14 @@ namespace StudentManagement.Services
 
         public async Task SavePostToDatabaseAsync(NewsfeedPost post)
         {
-            db().Notifications.AddOrUpdate(ConvertPostNewsfeedToNotification(post));
+            db().Notification.AddOrUpdate(ConvertPostNewsfeedToNotification(post));
             await db().SaveChangesAsync();
         }
 
         public async Task SavePostToNotificationInfoAsync(NewsfeedPost post)
         {
             var notification = NotificationServices.Instance.FindNotificationByNotificationId(post.PostId);
-            var listCourseRegister = notification.SubjectClass.CourseRegisters.ToList();
+            var listCourseRegister = notification.SubjectClass.CourseRegister.ToList();
             foreach (var courseRegister in listCourseRegister)
             {
                 //not sent to the poster if poster is student
@@ -125,7 +125,7 @@ namespace StudentManagement.Services
                     IdUserReceiver = courseRegister.Student.IdUsers,
                     IsRead = false,
                 };
-                db().NotificationInfoes.AddOrUpdate(notificationInfo);
+                db().NotificationInfo.AddOrUpdate(notificationInfo);
             }
             await db().SaveChangesAsync();
 
@@ -133,25 +133,25 @@ namespace StudentManagement.Services
 
         public async Task SaveCommentToDatabaseAsync(PostComment comment)
         {
-            db().NotificationComments.AddOrUpdate(ConvertPostCommentToNotificationComment(comment));
+            db().NotificationComment.AddOrUpdate(ConvertPostCommentToNotificationComment(comment));
             await db().SaveChangesAsync();
         }
 
         public async Task SaveCommentToNotification(PostComment comment)
         {
-            db().Notifications.AddOrUpdate(ConvertPostCommentToNotification(comment));
+            db().Notification.AddOrUpdate(ConvertPostCommentToNotification(comment));
             await db().SaveChangesAsync();
         }
         public async Task SaveCommentToNotificationInfo(PostComment comment)
         {
-            db().NotificationInfoes.AddOrUpdate(ConvertPostCommentToNotificationInfo(comment));
+            db().NotificationInfo.AddOrUpdate(ConvertPostCommentToNotificationInfo(comment));
             await db().SaveChangesAsync();
         }
 
         public async Task SaveImageToDatabaseAsync(Guid postId, string image)
         {
             var imgId = await DatabaseImageTableServices.Instance.SaveImageToDatabaseAsync(image);
-            var postImage = new NotificationImage()
+            var postImage = new NotificationImages()
             {
                 Id = Guid.NewGuid(),
                 IdNotification = postId,
@@ -168,12 +168,12 @@ namespace StudentManagement.Services
 
         public List<Notification> GetListNotificationOfSubjectClass(Guid? idSubjectClass)
         {
-            return db().Notifications.Where(notif => notif.IdSubjectClass == idSubjectClass && notif.IdNotificationType==null).ToList();
+            return db().Notification.Where(notif => notif.IdSubjectClass == idSubjectClass && notif.IdNotificationType==null).ToList();
         }
 
         public List<NotificationComment> GetListCommentInPost(Guid postId)
         {
-            return db().NotificationComments.Where(cmt => cmt.IdNotification == postId).ToList();
+            return db().NotificationComment.Where(cmt => cmt.IdNotification == postId).ToList();
         }
 
         public List<string> GetListImagesInPost(Guid postId)
@@ -187,20 +187,20 @@ namespace StudentManagement.Services
 
         public async Task<int> DeletePostAsync(Guid? id)
         {
-            var notification = db().Notifications.FirstOrDefault(notif => notif.Id == id);
-            db().Notifications.Remove(notification);
+            var notification = db().Notification.FirstOrDefault(notif => notif.Id == id);
+            db().Notification.Remove(notification);
 
             // Remove comment with post
-            var comments = db().NotificationComments.Where(cmt => cmt.IdNotification == id);
-            db().NotificationComments.RemoveRange(comments);
+            var comments = db().NotificationComment.Where(cmt => cmt.IdNotification == id);
+            db().NotificationComment.RemoveRange(comments);
 
             return await db().SaveChangesAsync();
         }
 
         public async Task<int> DeleteCommentAsync(Guid? id)
         {
-            var comment = db().NotificationComments.FirstOrDefault(cmt => cmt.Id == id);
-            db().NotificationComments.Remove(comment);
+            var comment = db().NotificationComment.FirstOrDefault(cmt => cmt.Id == id);
+            db().NotificationComment.Remove(comment);
 
             return await db().SaveChangesAsync();
         }

@@ -24,7 +24,7 @@ namespace StudentManagement.Services
 
         public CourseRegister GetFirstCourseRegister()
         {
-            return DataProvider.Instance.Database.CourseRegisters.FirstOrDefault();
+            return DataProvider.Instance.Database.CourseRegister.FirstOrDefault();
         }
 
         public ObservableCollection<SubjectClass> LoadCourseRegisteredListByStudentId(Guid idStudent)
@@ -32,7 +32,7 @@ namespace StudentManagement.Services
             try
             {
                 ObservableCollection<SubjectClass> listSubjectClass = new ObservableCollection<SubjectClass>();
-                List<CourseRegister> listCourseRegistered = DataProvider.Instance.Database.CourseRegisters.Where(y => y.IdStudent == idStudent).Where(z => z.Status == 1).ToList();
+                List<CourseRegister> listCourseRegistered = DataProvider.Instance.Database.CourseRegister.Where(y => y.IdStudent == idStudent).Where(z => z.Status == 1).ToList();
                 foreach (CourseRegister registeredCourse in listCourseRegistered)
                 {
                     if (!registeredCourse.SubjectClass.IsDeleted)
@@ -50,7 +50,7 @@ namespace StudentManagement.Services
             try
             {
                 ObservableCollection<SubjectClass> listSubjectClass = new ObservableCollection<SubjectClass>();
-                List<CourseRegister> listCourseRegistered = DataProvider.Instance.Database.CourseRegisters.Where(x => x.SubjectClass.IdSemester == idSemester).Where(y => y.IdStudent == idStudent).Where(z => z.Status == 1).ToList();
+                List<CourseRegister> listCourseRegistered = DataProvider.Instance.Database.CourseRegister.Where(x => x.SubjectClass.IdSemester == idSemester).Where(y => y.IdStudent == idStudent).Where(z => z.Status == 1).ToList();
                 foreach (CourseRegister registeredCourse in listCourseRegistered)
                 {
                     if (!registeredCourse.SubjectClass.IsDeleted)
@@ -85,7 +85,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                return DataProvider.Instance.Database.CourseRegisters
+                return DataProvider.Instance.Database.CourseRegister
                 .Where(register => register.SubjectClass.IdSemester == idSemester)
                 .Where(register => register.IdStudent == idStudent)
                 .Where(register => register.IdSubjectClass == idSubjectClass)
@@ -107,7 +107,7 @@ namespace StudentManagement.Services
                     IdSubjectClass = subjectClass.Id,
                     Status = 1,
                 };
-                DataProvider.Instance.Database.CourseRegisters.Add(registering);
+                DataProvider.Instance.Database.CourseRegister.Add(registering);
                 DataProvider.Instance.Database.SaveChanges();
 
                 return true;
@@ -127,7 +127,7 @@ namespace StudentManagement.Services
             try
             {
                 CourseRegister registered = FindCourseRegisterBySemesterIdAndStudentIdAndSubjectClassId(idSemester, idStudent, subjectClass.Id);
-                DataProvider.Instance.Database.CourseRegisters.Remove(registered);
+                DataProvider.Instance.Database.CourseRegister.Remove(registered);
                 DataProvider.Instance.Database.SaveChanges();
                 return true;
             }
@@ -141,7 +141,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                return DataProvider.Instance.Database.CourseRegisters
+                return DataProvider.Instance.Database.CourseRegister
                 .Where(register => register.IdSubjectClass == idSubjectClass)
                 .Select(student => student.Student).ToList();
             }
@@ -155,7 +155,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                return DataProvider.Instance.Database.CourseRegisters
+                return DataProvider.Instance.Database.CourseRegister
                 .Where(register => register.IdStudent == idStudent)
                 .Where(register => register.IdSubjectClass == idSubjectClass)
                 .FirstOrDefault();
@@ -169,7 +169,7 @@ namespace StudentManagement.Services
         public async Task StudentUnregisterSubjectClassDetailToDatabase(Guid idStudent, SubjectClass subjectClass)
         {
             CourseRegister registered = FindCourseRegisterByStudentIdAndSubjectClassId(idStudent, subjectClass.Id);
-            DataProvider.Instance.Database.CourseRegisters.Remove(registered);
+            DataProvider.Instance.Database.CourseRegister.Remove(registered);
             await DataProvider.Instance.Database.SaveChangesAsync();
         }
 
@@ -182,10 +182,10 @@ namespace StudentManagement.Services
                 IdSubjectClass = subjectClass.Id,
                 Status = 1,
             };
-            DataProvider.Instance.Database.CourseRegisters.AddOrUpdate(registering);
+            DataProvider.Instance.Database.CourseRegister.AddOrUpdate(registering);
             await DataProvider.Instance.Database.SaveChangesAsync();
         }
-        public int CountPeriodByUserAndDate(User user, DateTime date)
+        public int CountPeriodByUserAndDate(Users user, DateTime date)
         {
             try
             {
@@ -200,11 +200,11 @@ namespace StudentManagement.Services
                     case "Giáo viên":
                         listSubjectClassRegistered = SubjectClassServices.Instance.LoadSubjectClassListBySemesterId(idSemester).
                                                         Where(subjectClass => subjectClass.IsDeleted == false).
-                                                        Where(subjectClass => subjectClass.Teachers.FirstOrDefault().Id == user.Teachers.FirstOrDefault().Id).
+                                                        Where(subjectClass => subjectClass.Teacher.FirstOrDefault().Id == user.Teacher.FirstOrDefault().Id).
                                                         ToList();
                         break;
                     case "Học viên":
-                        listSubjectClassRegistered = LoadCourseRegisteredListBySemesterIdAndStudentId(idSemester, user.Students.FirstOrDefault().Id).
+                        listSubjectClassRegistered = LoadCourseRegisteredListBySemesterIdAndStudentId(idSemester, user.Student.FirstOrDefault().Id).
                                                         Where(subjectClass => subjectClass.IsDeleted == false).
                                                         ToList();
                         break;
@@ -218,7 +218,7 @@ namespace StudentManagement.Services
                     {
                         count += subjectClass.Period.Length;
                     }
-                    foreach (AbsentCalendar absentEvent in subjectClass.AbsentCalendars)
+                    foreach (AbsentCalendar absentEvent in subjectClass.AbsentCalendar)
                     {
                         if (absentEvent.Date.Value.Date.Equals(date.Date))
                         {

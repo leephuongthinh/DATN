@@ -208,10 +208,10 @@ namespace StudentManagement.ViewModels
         #region methods
         public void InitCombobox()
         {
-            Subjects = new ObservableCollection<Subject>(DataProvider.Instance.Database.Subjects);
-            TrainingForms = new ObservableCollection<TrainingForm>(DataProvider.Instance.Database.TrainingForms);
+            Subjects = new ObservableCollection<Subject>(DataProvider.Instance.Database.Subject);
+            TrainingForms = new ObservableCollection<TrainingForm>(DataProvider.Instance.Database.TrainingForm);
             DayOfWeeks = new ObservableCollection<string>() { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật" };
-            Teachers = new ObservableCollection<Teacher>(DataProvider.Instance.Database.Teachers);
+            Teachers = new ObservableCollection<Teacher>(DataProvider.Instance.Database.Teacher);
         }
 
         public void InitCommand()
@@ -235,7 +235,7 @@ namespace StudentManagement.ViewModels
                 NumberOfStudents = 0,
                 TrainingForm = SelectedTF,
                 DatabaseImageTable = DatabaseImageTableServices.Instance.GetFirstDatabaseImageTable(),
-                Teachers = new ObservableCollection<Teacher>() { SelectedTeacher }
+                Teacher = new ObservableCollection<Teacher>() { SelectedTeacher }
             };
             SubjectClassServices.Instance.GenerateDefaultCommponentScore(newCourse);
             CurrentCard = newCourse;

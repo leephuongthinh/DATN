@@ -48,7 +48,7 @@ namespace StudentManagement.ViewModels
                     if (_selectedItem != null)
                     {
                         ShowDetailScore();
-                        string SubjectClassDisplayName = DataProvider.Instance.Database.SubjectClasses.Where(x => x.Id == _selectedItem.IdSubjectClass).FirstOrDefault().Subject.DisplayName;
+                        string SubjectClassDisplayName = DataProvider.Instance.Database.SubjectClass.Where(x => x.Id == _selectedItem.IdSubjectClass).FirstOrDefault().Subject.DisplayName;
                         _scoreboardRightSideBarItemViewModel = new ScoreBoardRightSideBarItemViewModel(CurrentScore, SubjectClassDisplayName);
                         RightSideBarItemViewModel = _scoreboardRightSideBarItemViewModel;
                     }
@@ -77,7 +77,7 @@ namespace StudentManagement.ViewModels
             var user = LoginServices.CurrentUser;
             if (user != null && user.UserRole.Role == "Học viên")
             {
-                IdStudent = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == user.Id).FirstOrDefault().Id;
+                IdStudent = DataProvider.Instance.Database.Student.Where(x => x.IdUsers == user.Id).FirstOrDefault().Id;
             }    
                 
 
@@ -97,10 +97,10 @@ namespace StudentManagement.ViewModels
                 CurrentScore = new ObservableCollection<DetailScoreItem>();
 
                 var ListDetailScore = new List<DetailScore>();
-                var ListComponentScore = DataProvider.Instance.Database.ComponentScores.Where(x => x.IdSubjectClass == SelectedItem.IdSubjectClass).ToList();
+                var ListComponentScore = DataProvider.Instance.Database.ComponentScore.Where(x => x.IdSubjectClass == SelectedItem.IdSubjectClass).ToList();
                 foreach (var component in ListComponentScore)
                 {
-                    var score = DataProvider.Instance.Database.DetailScores.FirstOrDefault(x => x.IdComponentScore == component.Id && x.IdStudent == IdStudent);
+                    var score = DataProvider.Instance.Database.DetailScore.FirstOrDefault(x => x.IdComponentScore == component.Id && x.IdStudent == IdStudent);
                     if (score == null || score?.Score == null)
                         continue;
                     ListDetailScore.Add(score);
@@ -134,7 +134,7 @@ namespace StudentManagement.ViewModels
         {
             _rightSideBarItemViewModel = _emptyStateRightSideBarViewModel;
             if(CurrentUser.UserRole.Role=="Học viên")
-                IdStudent = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == CurrentUser.Id).FirstOrDefault().Id;
+                IdStudent = DataProvider.Instance.Database.Student.Where(x => x.IdUsers == CurrentUser.Id).FirstOrDefault().Id;
         }
 
     }

@@ -39,7 +39,7 @@ namespace StudentManagement.Views
 
 		private string GetLicenseFormatGuidance()
 		{
-			return "Mã kích hoạt không hợp lệ.";
+			return "Mã kích hoạt không hợp lệ hoặc đã được sử dụng.";
 		}
 
 		private void LicenseKeyTextBox_TextChanged(object sender, TextChangedEventArgs e)

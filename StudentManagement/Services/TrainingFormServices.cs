@@ -22,12 +22,12 @@ namespace StudentManagement.Services
 
         public DbSet<TrainingForm> LoadTrainingFormList()
         {
-            return DataProvider.Instance.Database.TrainingForms;
+            return DataProvider.Instance.Database.TrainingForm;
         }
 
         public TrainingForm FindTrainingFormByDisplayName(string name)
         {
-            TrainingForm trainingForm = DataProvider.Instance.Database.TrainingForms.Where(trainingFormItem => trainingFormItem.DisplayName == name).FirstOrDefault();
+            TrainingForm trainingForm = DataProvider.Instance.Database.TrainingForm.Where(trainingFormItem => trainingFormItem.DisplayName == name).FirstOrDefault();
             return trainingForm;
         }
 
@@ -54,7 +54,7 @@ namespace StudentManagement.Services
         /// <returns>TrainingFormCard</returns>
         public TrainingFormCard ConvertTrainingFormToTrainingFormCard(TrainingForm trainingForm)
         {
-            int numberOfStudentsOfTrainingForm = DataProvider.Instance.Database.Students.Where(student => student.IdTrainingForm == trainingForm.Id).Count();
+            int numberOfStudentsOfTrainingForm = DataProvider.Instance.Database.Student.Where(student => student.IdTrainingForm == trainingForm.Id).Count();
             TrainingFormCard trainingFormCard = new TrainingFormCard(trainingForm.Id, trainingForm.DisplayName, trainingForm.Faculty_TrainingForm.Count, numberOfStudentsOfTrainingForm);
 
             return trainingFormCard;
@@ -67,7 +67,7 @@ namespace StudentManagement.Services
         /// <returns>TrainingForm || null</returns>
         public TrainingForm FindTrainingFormByTrainingFormId(Guid id)
         {
-            TrainingForm trainingForm = DataProvider.Instance.Database.TrainingForms.Where(trainingFormItem => trainingFormItem.Id == id).FirstOrDefault();
+            TrainingForm trainingForm = DataProvider.Instance.Database.TrainingForm.Where(trainingFormItem => trainingFormItem.Id == id).FirstOrDefault();
 
             return trainingForm;
         }
@@ -80,7 +80,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                DataProvider.Instance.Database.TrainingForms.AddOrUpdate(trainingForm);
+                DataProvider.Instance.Database.TrainingForm.AddOrUpdate(trainingForm);
                 DataProvider.Instance.Database.SaveChanges();
                 return true;
             }
@@ -148,7 +148,7 @@ namespace StudentManagement.Services
         public ObservableCollection<string> LoadListTrainingForm()
         {
             ObservableCollection<string> listTrainingForm = new ObservableCollection<string>();
-            DataProvider.Instance.Database.TrainingForms.Where(el => el.IsDeleted != true).ToList().ForEach(trainningForm => listTrainingForm.Add(trainningForm.DisplayName));
+            DataProvider.Instance.Database.TrainingForm.Where(el => el.IsDeleted != true).ToList().ForEach(trainningForm => listTrainingForm.Add(trainningForm.DisplayName));
             return listTrainingForm;
         }
     }

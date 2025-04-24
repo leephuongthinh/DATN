@@ -12,8 +12,6 @@ namespace StudentManagement.Models
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
-    using System.Data.Entity.Core.Objects;
-    using System.Linq;
     
     public partial class StudentManagementEntities : DbContext
     {
@@ -27,48 +25,36 @@ namespace StudentManagement.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<AbsentCalendar> AbsentCalendars { get; set; }
-        public virtual DbSet<Admin> Admins { get; set; }
-        public virtual DbSet<Class> Classes { get; set; }
-        public virtual DbSet<ComponentScore> ComponentScores { get; set; }
-        public virtual DbSet<CourseRegister> CourseRegisters { get; set; }
-        public virtual DbSet<DatabaseImageTable> DatabaseImageTables { get; set; }
-        public virtual DbSet<DetailScore> DetailScores { get; set; }
-        public virtual DbSet<Document> Documents { get; set; }
-        public virtual DbSet<Examination> Examinations { get; set; }
-        public virtual DbSet<Faculty> Faculties { get; set; }
+        public virtual DbSet<AbsentCalendar> AbsentCalendar { get; set; }
+        public virtual DbSet<Admin> Admin { get; set; }
+        public virtual DbSet<Class> Class { get; set; }
+        public virtual DbSet<ComponentScore> ComponentScore { get; set; }
+        public virtual DbSet<CourseRegister> CourseRegister { get; set; }
+        public virtual DbSet<DatabaseImageTable> DatabaseImageTable { get; set; }
+        public virtual DbSet<DetailScore> DetailScore { get; set; }
+        public virtual DbSet<Document> Document { get; set; }
+        public virtual DbSet<Examination> Examination { get; set; }
+        public virtual DbSet<Faculty> Faculty { get; set; }
         public virtual DbSet<Faculty_TrainingForm> Faculty_TrainingForm { get; set; }
-        public virtual DbSet<Folder> Folders { get; set; }
-        public virtual DbSet<Notification> Notifications { get; set; }
-        public virtual DbSet<NotificationComment> NotificationComments { get; set; }
-        public virtual DbSet<NotificationImage> NotificationImages { get; set; }
-        public virtual DbSet<NotificationInfo> NotificationInfoes { get; set; }
-        public virtual DbSet<NotificationType> NotificationTypes { get; set; }
-        public virtual DbSet<OTP> OTPs { get; set; }
-        public virtual DbSet<Semester> Semesters { get; set; }
-        public virtual DbSet<Student> Students { get; set; }
-        public virtual DbSet<Subject> Subjects { get; set; }
-        public virtual DbSet<SubjectClass> SubjectClasses { get; set; }
-        public virtual DbSet<Teacher> Teachers { get; set; }
-        public virtual DbSet<TrainingForm> TrainingForms { get; set; }
-        public virtual DbSet<TrainingScore> TrainingScores { get; set; }
+        public virtual DbSet<Folder> Folder { get; set; }
+        public virtual DbSet<Notification> Notification { get; set; }
+        public virtual DbSet<NotificationComment> NotificationComment { get; set; }
+        public virtual DbSet<NotificationImages> NotificationImages { get; set; }
+        public virtual DbSet<NotificationInfo> NotificationInfo { get; set; }
+        public virtual DbSet<NotificationType> NotificationType { get; set; }
+        public virtual DbSet<OTP> OTP { get; set; }
+        public virtual DbSet<Security> Security { get; set; }
+        public virtual DbSet<Semester> Semester { get; set; }
+        public virtual DbSet<Student> Student { get; set; }
+        public virtual DbSet<Subject> Subject { get; set; }
+        public virtual DbSet<SubjectClass> SubjectClass { get; set; }
+        public virtual DbSet<Teacher> Teacher { get; set; }
+        public virtual DbSet<TrainingForm> TrainingForm { get; set; }
+        public virtual DbSet<TrainingScore> TrainingScore { get; set; }
         public virtual DbSet<User_UserRole_UserInfo> User_UserRole_UserInfo { get; set; }
-        public virtual DbSet<UserRole> UserRoles { get; set; }
+        public virtual DbSet<UserRole> UserRole { get; set; }
         public virtual DbSet<UserRole_UserInfo> UserRole_UserInfo { get; set; }
         public virtual DbSet<UserRole_UserInfoItem> UserRole_UserInfoItem { get; set; }
-        public virtual DbSet<User> Users { get; set; }
-    
-        public virtual int USP_InsertUserWithRole(string role, string faculty)
-        {
-            var roleParameter = role != null ?
-                new ObjectParameter("Role", role) :
-                new ObjectParameter("Role", typeof(string));
-    
-            var facultyParameter = faculty != null ?
-                new ObjectParameter("Faculty", faculty) :
-                new ObjectParameter("Faculty", typeof(string));
-    
-            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction("USP_InsertUserWithRole", roleParameter, facultyParameter);
-        }
+        public virtual DbSet<Users> Users { get; set; }
     }
 }

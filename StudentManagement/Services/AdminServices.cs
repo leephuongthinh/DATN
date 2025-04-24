@@ -21,17 +21,17 @@ namespace StudentManagement.Services
 
         public Admin GetFirstStudent()
         {
-            return DataProvider.Instance.Database.Admins.FirstOrDefault();
+            return DataProvider.Instance.Database.Admin.FirstOrDefault();
         }
 
         public DbSet<Admin> LoadAdminList()
         {
-            return DataProvider.Instance.Database.Admins;
+            return DataProvider.Instance.Database.Admin;
         }
 
         public Admin FindAdminByAdminId(Guid id)
         {
-            Admin a = DataProvider.Instance.Database.Admins.Where(adminItem => adminItem.Id == id).FirstOrDefault();
+            Admin a = DataProvider.Instance.Database.Admin.Where(adminItem => adminItem.Id == id).FirstOrDefault();
             return a;
         }
 
@@ -43,7 +43,7 @@ namespace StudentManagement.Services
 
                 if (savedAdmin == null)
                 {
-                    DataProvider.Instance.Database.Admins.Add(admin);
+                    DataProvider.Instance.Database.Admin.Add(admin);
                 }
                 else
                 {
@@ -60,9 +60,9 @@ namespace StudentManagement.Services
 
         }
 
-        public Admin GetAdminByUser(User user)
+        public Admin GetAdminByUser(Users user)
         {
-            return DataProvider.Instance.Database.Admins.FirstOrDefault(admin=>admin.IdUsers == user.Id);
+            return DataProvider.Instance.Database.Admin.FirstOrDefault(admin=>admin.IdUsers == user.Id);
         }
     }
 }

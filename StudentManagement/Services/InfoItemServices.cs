@@ -48,7 +48,7 @@ namespace StudentManagement.Services
         }
         public Guid FindUserRoleByRole(string role)
         {
-            return DataProvider.Instance.Database.UserRoles.Where(userRoles => userRoles.Role == role).FirstOrDefault().Id;
+            return DataProvider.Instance.Database.UserRole.Where(userRoles => userRoles.Role == role).FirstOrDefault().Id;
         }
         public ObservableCollection<InfoItem> GetInfoSourceInSettingByRole(string role)
         {
@@ -149,7 +149,7 @@ namespace StudentManagement.Services
         {
             try
             {
-                Guid userRoleId = DataProvider.Instance.Database.UserRoles.Where(userRole => userRole.Role == role).FirstOrDefault().Id;
+                Guid userRoleId = DataProvider.Instance.Database.UserRole.Where(userRole => userRole.Role == role).FirstOrDefault().Id;
                 UserRole_UserInfo userRole_UserInfo = new UserRole_UserInfo()
                 {
                     Id = Guid.NewGuid(),
@@ -174,10 +174,10 @@ namespace StudentManagement.Services
         }
         public void AddUser_UserRole_UserInfoByUserRole_UserInfo(UserRole_UserInfo userRole_UserInfo)
         {
-            List<User> users = DataProvider.Instance.Database.Users.Where(user => user.IdUserRole == userRole_UserInfo.IdRole).ToList();
+            List<Users> users = DataProvider.Instance.Database.Users.Where(user => user.IdUserRole == userRole_UserInfo.IdRole).ToList();
             if (users.Count == 0)
                 return;
-            foreach (User user in users)
+            foreach (Users user in users)
             {
                 User_UserRole_UserInfo user_UserRole_UserInfo = new User_UserRole_UserInfo()
                 {

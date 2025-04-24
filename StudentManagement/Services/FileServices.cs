@@ -47,7 +47,7 @@ namespace StudentManagement.Services
             {
                 folderName = doc.Folder.DisplayName;
             }
-            return new FileInfo(doc.Id, doc.DisplayName, doc.IdPoster, doc.User.DisplayName, doc.Content, doc.CreatedAt, doc.Size, doc.IdFolder, folderName, doc.IdSubjectClass);
+            return new FileInfo(doc.Id, doc.DisplayName, doc.IdPoster, doc.Users.DisplayName, doc.Content, doc.CreatedAt, doc.Size, doc.IdFolder, folderName, doc.IdSubjectClass);
         }
 
         public Folder ConvertFileInfoToFolder(FileInfo file)
@@ -68,7 +68,7 @@ namespace StudentManagement.Services
                         id: null,
                         name: "",
                         publisherId: (Guid)folder.IdPoster,
-                        publisher: folder.User.DisplayName,
+                        publisher: folder.Users.DisplayName,
                         content: "",
                         uploadTime: folder.CreatedAt,
                         size: 0,
@@ -83,14 +83,14 @@ namespace StudentManagement.Services
 
         public async Task<int> SaveFileOfSubjectClassToDatabaseAsync(FileInfo file)
         {
-            db().Documents.Add(ConvertFileInfoToDocument(file));
+            db().Document.Add(ConvertFileInfoToDocument(file));
             return await db().SaveChangesAsync();
         }
 
         public async Task<int> SaveFolderOfSubjectClassToDatabaseAsync(FileInfo file)
         {
 
-            db().Folders.Add(ConvertFileInfoToFolder(file));
+            db().Folder.Add(ConvertFileInfoToFolder(file));
             return await db().SaveChangesAsync();
         }
 
@@ -100,12 +100,12 @@ namespace StudentManagement.Services
 
         public List<Document> GetListFilesOfSubjectClass(Guid? idSubjectClass)
         {
-            return db().Documents.Where(file => file.IdSubjectClass == idSubjectClass).ToList();
+            return db().Document.Where(file => file.IdSubjectClass == idSubjectClass).ToList();
         }
 
         public List<Folder> GetListFoldersOfSubjectClass(Guid? idSubjectClass)
         {
-            return db().Folders.Where(folder => folder.IdSubjectClass == idSubjectClass).ToList();
+            return db().Folder.Where(folder => folder.IdSubjectClass == idSubjectClass).ToList();
         }
 
         public List<Folder> GetListFoldersHasFilesOfSubjectClass(Guid? idSubjectClass)
@@ -124,13 +124,13 @@ namespace StudentManagement.Services
 
         public async Task<int> UpdateFolderAsync(FileInfo file)
         {
-            db().Folders.AddOrUpdate(ConvertFileInfoToFolder(file));
+            db().Folder.AddOrUpdate(ConvertFileInfoToFolder(file));
             return await db().SaveChangesAsync();
         }
 
         public async Task<int> UpdateFileAsync(FileInfo file)
         {
-            db().Documents.AddOrUpdate(ConvertFileInfoToDocument(file));
+            db().Document.AddOrUpdate(ConvertFileInfoToDocument(file));
             return await db().SaveChangesAsync();
         }
 
@@ -140,15 +140,15 @@ namespace StudentManagement.Services
 
         public async Task<int> DeleteFileAsync(FileInfo file)
         {
-            var doc = db().Documents.FirstOrDefault(document => document.Id == file.Id);
-            db().Documents.Remove(doc);
+            var doc = db().Document.FirstOrDefault(document => document.Id == file.Id);
+            db().Document.Remove(doc);
             return await db().SaveChangesAsync();
         }
 
         public async Task<int> DeleteFolderAsync(FileInfo file)
         {
-            var folder = db().Folders.FirstOrDefault(fd => fd.Id == file.FolderId);
-            db().Folders.Remove(folder);
+            var folder = db().Folder.FirstOrDefault(fd => fd.Id == file.FolderId);
+            db().Folder.Remove(folder);
             return await db().SaveChangesAsync();
         }
 

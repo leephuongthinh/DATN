@@ -370,15 +370,15 @@ namespace StudentManagement.ViewModels
                                 WeekDay = Convert.ToInt32(courseRow[4]),                                                      //Column WeekDay NVARCHAR
                                 Code = Convert.ToString(courseRow[5]),
                                 MaxNumberOfStudents = Convert.ToInt32(courseRow[6]),
-                                TrainingForm = DataProvider.Instance.Database.TrainingForms.Where(tf => tf.DisplayName.Equals(TFName)).FirstOrDefault(),
-                                Teachers = new ObservableCollection<Teacher>() { TeacherServices.Instance.FindTeacherByUserName(userNameTeacher) },
+                                TrainingForm = DataProvider.Instance.Database.TrainingForm.Where(tf => tf.DisplayName.Equals(TFName)).FirstOrDefault(),
+                                Teacher = new ObservableCollection<Teacher>() { TeacherServices.Instance.FindTeacherByUserName(userNameTeacher) },
                                 DatabaseImageTable = /*DatabaseImageTableServices.Instance.GetFirstDatabaseImageTable()*/ null,           //Thiếu image
                                 NumberOfStudents = 0
                             };
-                            if (tempSubjectClass.Teachers.FirstOrDefault() == null)
+                            if (tempSubjectClass.Teacher.FirstOrDefault() == null)
                             {
-                                tempSubjectClass.Teachers.Clear();
-                                tempSubjectClass.Teachers.Add(DataProvider.Instance.Database.Teachers.FirstOrDefault());
+                                tempSubjectClass.Teacher.Clear();
+                                tempSubjectClass.Teacher.Add(DataProvider.Instance.Database.Teacher.FirstOrDefault());
                             }
                             SubjectClassServices.Instance.UpdateIds(tempSubjectClass);
 
@@ -475,7 +475,7 @@ namespace StudentManagement.ViewModels
                                 ws.Cell("F" + row.ToString()).Value = item.Code;
                                 ws.Cell("G" + row.ToString()).Value = item.MaxNumberOfStudents;
                                 ws.Cell("H" + row.ToString()).Value = item.TrainingForm.DisplayName;
-                                ws.Cell("I" + row.ToString()).Value = item.MainTeacher.User.Username;
+                                ws.Cell("I" + row.ToString()).Value = item.MainTeacher.Users.Username;
                                 row++;
                             }
                         }

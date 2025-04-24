@@ -16,11 +16,11 @@ namespace StudentManagement.Services
     {
         public class LoginEvent : EventArgs
         {
-            private User _user;
+            private Users _user;
 
-            public User User { get => _user; set => _user = value; }
+            public Users User { get => _user; set => _user = value; }
 
-            public LoginEvent(User user)
+            public LoginEvent(Users user)
             {
                 this.User = user;
             }
@@ -37,8 +37,8 @@ namespace StudentManagement.Services
 
         public static LoginServices Instance => s_instance ?? (s_instance = new LoginServices());
 
-        private static User s_currentUser;
-        public static User CurrentUser { get => s_currentUser; set => s_currentUser = value; }
+        private static Users s_currentUser;
+        public static Users CurrentUser { get => s_currentUser; set => s_currentUser = value; }
 
         public static string FilePathRememberedAccount = "D:\\accountLangT.txt";
 
@@ -65,7 +65,7 @@ namespace StudentManagement.Services
 
         public void Login(string username)
         {
-            User user = UserServices.Instance.FindUserByUsername(username);
+            Users user = UserServices.Instance.FindUserByUsername(username);
 
             CurrentUser = user;
 

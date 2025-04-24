@@ -2,16 +2,19 @@
 using StudentManagement.Services;
 using System;
 using System.Collections.Generic;
+using StudentManagement.ViewModels;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel;
+
 
 namespace StudentManagement.Objects
 {
-    public class CourseItem : Models.SubjectClass
-    {
-        private bool _isSelected;
+	public class CourseItem : Models.SubjectClass, INotifyPropertyChanged
+	{
+		private bool _isSelected;
         public bool IsSelected
         {
             get => _isSelected;
@@ -32,20 +35,27 @@ namespace StudentManagement.Objects
             set { _isConflict = value; OnPropertyChanged(); }
         }
 
-        private bool _isValidSubject;
+
+		private bool _isValidSubject;
         public bool IsValidSubject
         {
             get => _isValidSubject;
             set { _isValidSubject = value; OnPropertyChanged(); }
         }
+		public event PropertyChangedEventHandler PropertyChanged;
 
-        private Teacher _mainTeacher;
+		protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		private Teacher _mainTeacher;
         public Teacher MainTeacher { get => _mainTeacher; set { _mainTeacher = value; OnPropertyChanged(); } }
 
         public CourseItem(Models.SubjectClass a, bool isSelected, bool isConflict = false, bool isValidSubject = false)
         {
             this.Id = a.Id;
-            this.Teachers = a.Teachers;
+            this.Teacher = a.Teacher;
             this.Semester = a.Semester;
             this.IdSemester = a.IdSemester;
             this.Subject = a.Subject;
@@ -64,14 +74,14 @@ namespace StudentManagement.Objects
             this.IsSelected = false;
             this.IsConflict = isConflict;
             this.IsValidSubject = isValidSubject;
-            this.MainTeacher = this.Teachers.FirstOrDefault();
+            this.MainTeacher = this.Teacher.FirstOrDefault();
         }
         public SubjectClass ConvertToSubjectClass()
         {
             SubjectClass temp = new SubjectClass()
             {
                 Id = this.Id,
-                Teachers = this.Teachers,
+                Teacher = this.Teacher,
                 Semester = this.Semester,
                 Subject = this.Subject,
                 StartDate = this.StartDate,
@@ -137,7 +147,7 @@ namespace StudentManagement.Objects
         public bool IsEqualProperty(SubjectClass a)
         {
             return
-            this.Teachers.FirstOrDefault() == a.Teachers.FirstOrDefault() &&
+            this.Teacher.FirstOrDefault() == a.Teacher.FirstOrDefault() &&
             this.Semester == a.Semester &&
             this.Subject == a.Subject &&
             this.StartDate.Value.Date == a.StartDate.Value.Date &&

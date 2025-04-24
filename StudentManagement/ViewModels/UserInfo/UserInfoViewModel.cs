@@ -233,7 +233,7 @@ namespace StudentManagement.ViewModels
                             case "Hệ đào tạo":
                                 {
                                     var student = StudentServices.Instance.GetStudentbyUser(user);
-                                    student.IdTrainingForm = DataProvider.Instance.Database.TrainingForms.FirstOrDefault(trainingForm => trainingForm.DisplayName == infoItem.CurrendInfoItem.Value.ToString()).Id;
+                                    student.IdTrainingForm = DataProvider.Instance.Database.TrainingForm.FirstOrDefault(trainingForm => trainingForm.DisplayName == infoItem.CurrendInfoItem.Value.ToString()).Id;
                                     break;
                                 }
                             case "Chương trình đào tạo":
@@ -243,13 +243,13 @@ namespace StudentManagement.ViewModels
                                         case "học viên":
                                             {
                                                 var student = StudentServices.Instance.GetStudentbyUser(user);
-                                                student.IdFaculty = DataProvider.Instance.Database.Faculties.FirstOrDefault(faculty => faculty.DisplayName == infoItem.CurrendInfoItem.Value.ToString()).Id;
+                                                student.IdFaculty = DataProvider.Instance.Database.Faculty.FirstOrDefault(faculty => faculty.DisplayName == infoItem.CurrendInfoItem.Value.ToString()).Id;
                                                 break;
                                             }
                                         case "Giáo viên":
                                             {
                                                 var lecture = TeacherServices.Instance.GetTeacherbyUser(user);
-                                                lecture.IdFaculty = DataProvider.Instance.Database.Faculties.FirstOrDefault(faculty => faculty.DisplayName == infoItem.CurrendInfoItem.Value.ToString()).Id;
+                                                lecture.IdFaculty = DataProvider.Instance.Database.Faculty.FirstOrDefault(faculty => faculty.DisplayName == infoItem.CurrendInfoItem.Value.ToString()).Id;
                                                 break;
                                             }
                                     }
