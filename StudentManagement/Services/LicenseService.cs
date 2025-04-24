@@ -1,884 +1,328 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Management;
-using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using System.Windows;
+using System.Windows.Threading;
+using Newtonsoft.Json;
 
-namespace DemoLicenseApp
+public class LicenseService
 {
-	public enum LicenseState { Activated, Trial, Expired, Invalid }
+	// Configuration
+	private const string LicenseFilePath = "license.dat";
+	private static readonly byte[] EncryptionKey = Encoding.UTF8.GetBytes("YourSecureKey@123".PadRight(32)); // 256-bit key
 
-	public static class LicenseService
+	// Default keys
+	private static readonly Dictionary<string, LicenseType> _predefinedKeys = new Dictionary<string, LicenseType>
 	{
-		// Obfuscated constants
-		private static readonly string AppName = Encoding.UTF8.GetString(new byte[] { 0x44, 0x65, 0x6D, 0x6F, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73, 0x65, 0x41, 0x70, 0x70 });
-		private static readonly string MetaFile = Encoding.UTF8.GetString(new byte[] { 0x2E, 0x73, 0x79, 0x73, 0x5F, 0x6D, 0x65, 0x74, 0x61 });
-		private static readonly string LicenseKeysFile = Encoding.UTF8.GetString(new byte[] { 0x6C, 0x69, 0x63, 0x65, 0x6E, 0x73, 0x65, 0x5F, 0x6B, 0x65, 0x79, 0x73, 0x2E, 0x62, 0x69, 0x6E });
+		{ "DEMO-5MIN-ABCDE", LicenseType.Trial5Min },
+		{ "DEMO-1HOUR-XYZ12", LicenseType.Trial60Min },
+		{ "DEMO-PERM-12345", LicenseType.Permanent }
+	};
 
-		// Dynamic flags
-		private static string TrialFlag => GetFlag(1);
-		private static string ActivatedFlag => GetFlag(2);
+	// Properties
+	public LicenseType CurrentLicense { get; private set; } = LicenseType.Invalid;
+	public DateTime ActivationTime { get; private set; }
+	public DateTime ExpiryTime { get; private set; }
+	public bool IsValid => CurrentLicense != LicenseType.Invalid && DateTime.Now <= ExpiryTime;
+	public TimeSpan RemainingTime => IsValid ? ExpiryTime - DateTime.Now : TimeSpan.Zero;
 
-		// Dynamic key generation
-		private static byte[] AesKey => DeriveKey(GetDynamicKeyPart1() + GetDynamicKeyPart2());
-		private static byte[] LicenseKeysAesKey => DeriveKey(GetDynamicKeyPart2() + GetDynamicKeyPart3());
+	private DispatcherTimer _licenseCheckTimer;
 
-		// License keys cache
-		private static Dictionary<string, TimeSpan> _validLicenseKeys;
-		private static Dictionary<string, TimeSpan> ValidLicenseKeys
+	public enum LicenseType
+	{
+		Trial5Min,
+		Trial60Min,
+		Permanent,
+		Invalid
+	}
+
+	public event Action LicenseExpired;
+	public event Action LicenseValidated;
+
+	public LicenseService()
+	{
+		InitializeLicenseCheckTimer();
+	}
+	public void CheckLicenseOnStartup()
+	{
+		if (!File.Exists(LicenseFilePath)) return;
+
+		try
 		{
-			get
+			var licenseData = JsonConvert.DeserializeObject<LicenseData>(DecryptLicenseFile());
+			if (licenseData == null) return;
+
+			// Kiểm tra nếu đã hết hạn khi khởi động
+			if (DateTime.Now > licenseData.ExpiryTime)
 			{
-				if (_validLicenseKeys == null)
-				{
-					_validLicenseKeys = LoadLicenseKeysFromFile();
-				}
-				return _validLicenseKeys;
+				File.Delete(LicenseFilePath);
+				// Gửi sự kiện yêu cầu kích hoạt lại
+				LicenseExpired?.Invoke();
 			}
 		}
+		catch { /* Xử lý lỗi */ }
+	}
+	public bool CheckExistingLicense()
+	{
+		if (!File.Exists(LicenseFilePath)) return false;
 
-		private static Dictionary<string, TimeSpan> GetDefaultLicenseKeysFromEnv()
+		try
 		{
-			// Load file .env từ thư mục gốc
-			DotNetEnv.Env.Load();
+			string decryptedData = DecryptLicenseFile();
+			var licenseData = JsonConvert.DeserializeObject<LicenseData>(decryptedData);
 
-			var keys = new Dictionary<string, TimeSpan>();
-
-			try
+			// Validate the license data
+			if (licenseData == null ||
+				string.IsNullOrEmpty(licenseData.Key) ||
+				licenseData.ExpiryTime == default)
 			{
-				var key1 = Environment.GetEnvironmentVariable("DEMO_KEY_1");
-				var key2 = Environment.GetEnvironmentVariable("DEMO_KEY_2");
-				var key3 = Environment.GetEnvironmentVariable("DEMO_KEY_3");
-
-				if (TimeSpan.TryParse(Environment.GetEnvironmentVariable("DEMO_DURATION_1"), out var duration1))
-					keys[key1] = duration1;
-
-				if (TimeSpan.TryParse(Environment.GetEnvironmentVariable("DEMO_DURATION_2"), out var duration2))
-					keys[key2] = duration2;
-
-				if (TimeSpan.TryParse(Environment.GetEnvironmentVariable("DEMO_DURATION_3"), out var duration3))
-					keys[key3] = duration3;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error reading .env file: {ex.Message}");
-			}
-
-			return keys;
-		}
-
-		// Obfuscated paths
-		private static readonly string DataFolder = GetHiddenDataFolder();
-		public static readonly string FilePath = Path.Combine(DataFolder, MetaFile);
-		private static readonly string LicenseKeysPath = Path.Combine(DataFolder, LicenseKeysFile);
-
-		private static string GetFlag(int type) => type == 1 ? "TRIAL" : "ACTIVATED";
-
-		private static string GetDynamicKeyPart1() =>
-			Environment.MachineName.Substring(0, Math.Min(8, Environment.MachineName.Length));
-
-		private static string GetDynamicKeyPart2() =>
-			Environment.UserName.Substring(0, Math.Min(8, Environment.UserName.Length));
-
-		private static string GetDynamicKeyPart3() =>
-			Environment.OSVersion.VersionString.Substring(0, Math.Min(8, Environment.OSVersion.VersionString.Length));
-
-		//private static string GetHiddenDataFolder()
-		//{
-		//	var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-		//	var hash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(AppName));
-		//	var hiddenFolderName = Convert.ToBase64String(hash.Take(10).ToArray());
-		//	return Path.Combine(appDataPath, hiddenFolderName);
-		//}
-		private static string GetHiddenDataFolder()
-		{
-			// Lưu vào AppData/Local để dữ liệu tồn tại sau khi tắt ứng dụng
-			var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-			var folderName = "Protect"; // Thay bằng tên ứng dụng của bạn
-			return Path.Combine(appDataPath, folderName);
-		}
-		private static byte[] DeriveKey(string password, int keySize = 16)
-		{
-			using (var deriveBytes = new Rfc2898DeriveBytes(
-				password,
-				salt: Encoding.UTF8.GetBytes("FixedSaltForKeyDerivation"),
-				iterations: 10000,
-				HashAlgorithmName.SHA256))
-			{
-				return deriveBytes.GetBytes(keySize);
-			}
-		}
-
-		private static Dictionary<string, TimeSpan> LoadLicenseKeysFromFile()
-		{
-			var licenseKeys = new Dictionary<string, TimeSpan>();
-
-			try
-			{
-				if (!File.Exists(LicenseKeysPath))
-				{
-					var defaultKeys = new Dictionary<string, TimeSpan>
-					{
-						{ "DEMO1-7DAY-KEY12", TimeSpan.FromHours(1) },
-						{ "DEMO2-30DAY-KEY1", TimeSpan.FromDays(30) },
-						{ "DEMO3-365DAY-KEY", TimeSpan.FromDays(365) }
-					};
-					SaveLicenseKeysToFile(defaultKeys);
-					return defaultKeys;
-				}
-
-				byte[] encryptedData = File.ReadAllBytes(LicenseKeysPath);
-				string jsonContent = DecryptData(encryptedData, LicenseKeysAesKey);
-
-				var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-				var config = JsonSerializer.Deserialize<LicenseKeyConfig>(jsonContent, options);
-
-				foreach (var kvp in config.LicenseKeys)
-				{
-					if (TimeSpan.TryParse(kvp.Value, out TimeSpan duration))
-					{
-						licenseKeys[kvp.Key] = duration;
-					}
-					else
-					{
-						Console.WriteLine($"Invalid duration format for key: {kvp.Key}");
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error loading license keys: {ex.Message}");
-				licenseKeys = new Dictionary<string, TimeSpan>
-				{
-					{ "DEMO1-7DAY-KEY12", TimeSpan.FromHours(1) },
-					{ "DEMO2-30DAY-KEY1", TimeSpan.FromDays(30) },
-					{ "DEMO3-365DAY-KEY", TimeSpan.FromDays(365) }
-				};
-			}
-
-			return licenseKeys;
-		}
-
-		private static void SaveLicenseKeysToFile(Dictionary<string, TimeSpan> licenseKeys)
-		{
-			try
-			{
-				EnsureDataFolder();
-
-				var stringDict = new Dictionary<string, string>();
-				foreach (var kvp in licenseKeys)
-				{
-					stringDict[kvp.Key] = kvp.Value.ToString();
-				}
-
-				var config = new LicenseKeyConfig { LicenseKeys = stringDict };
-				string jsonContent = JsonSerializer.Serialize(config);
-
-				byte[] encryptedData = EncryptData(jsonContent, LicenseKeysAesKey);
-				File.WriteAllBytes(LicenseKeysPath, encryptedData);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error saving license keys: {ex.Message}");
-				throw;
-			}
-		}
-
-		private class LicenseKeyConfig
-		{
-			public Dictionary<string, string> LicenseKeys { get; set; }
-		}
-
-		private static byte[] EncryptData(string plainText, byte[] key)
-		{
-			using (var aes = Aes.Create())
-			{
-				aes.Key = key;
-				aes.GenerateIV(); // Tạo IV ngẫu nhiên
-
-				using (var memoryStream = new MemoryStream())
-				{
-					// Ghi IV vào đầu dữ liệu mã hóa
-					memoryStream.Write(aes.IV, 0, aes.IV.Length);
-
-					using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-					{
-						byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-						cryptoStream.Write(plainBytes, 0, plainBytes.Length);
-						cryptoStream.FlushFinalBlock();
-						return memoryStream.ToArray();
-					}
-				}
-			}
-		}
-
-		private static string DecryptData(byte[] cipherData, byte[] key)
-		{
-			try
-			{
-				using (var aes = Aes.Create())
-				{
-					aes.Key = key;
-
-					using (var memoryStream = new MemoryStream(cipherData))
-					{
-						byte[] iv = new byte[16]; // IV sẽ được lưu trữ ở đầu dữ liệu
-						memoryStream.Read(iv, 0, iv.Length); // Đọc IV từ dữ liệu
-
-						aes.IV = iv;
-
-						using (var cryptoStream = new CryptoStream(memoryStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
-						using (var streamReader = new StreamReader(cryptoStream))
-						{
-							return streamReader.ReadToEnd();
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Decryption error: {ex.Message}");
-				return string.Empty;
-			}
-		}
-
-
-		private static void EnsureDataFolder()
-		{
-			if (!Directory.Exists(DataFolder))
-			{
-				Directory.CreateDirectory(DataFolder);
-			}
-		}
-
-		public static string GetMachineId()
-		{
-			return $"{GetBiosSerialNumber() ?? "NO_BIOS"}_{GetDiskId() ?? "NO_DISK"}";
-		}
-
-		private static string GetBiosSerialNumber()
-		{
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_BIOS"))
-				{
-					foreach (ManagementObject queryObj in searcher.Get())
-					{
-						try
-						{
-							return queryObj["SerialNumber"]?.ToString();
-						}
-						catch { /* Ignore errors */ }
-					}
-				}
-			}
-			catch { /* Ignore WMI errors */ }
-			return null;
-		}
-
-		private static string GetProcessorId()
-		{
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_Processor"))
-				{
-					foreach (ManagementObject queryObj in searcher.Get())
-					{
-						try
-						{
-							return queryObj["ProcessorId"]?.ToString();
-						}
-						catch { /* Ignore errors */ }
-					}
-				}
-			}
-			catch { /* Ignore WMI errors */ }
-			return null;
-		}
-
-		private static string GetDiskId()
-		{
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive"))
-				{
-					foreach (ManagementObject queryObj in searcher.Get())
-					{
-						try
-						{
-							return queryObj["SerialNumber"]?.ToString()?.Trim();
-						}
-						catch { /* Ignore errors */ }
-					}
-				}
-			}
-			catch { /* Ignore WMI errors */ }
-			return null;
-		}
-
-		private static string GetMacAddress()
-		{
-			try
-			{
-				var nics = NetworkInterface.GetAllNetworkInterfaces();
-				var firstNic = nics.FirstOrDefault();
-				return firstNic?.GetPhysicalAddress().ToString();
-			}
-			catch { return null; }
-		}
-
-		public static bool IsDebugging()
-		{
-			bool isDebuggerPresent = false;
-			try
-			{
-				isDebuggerPresent = System.Diagnostics.Debugger.IsAttached;
-				if (System.Diagnostics.Debugger.IsLogging())
-					isDebuggerPresent = true;
-			}
-			catch { /* Ignore errors */ }
-			return isDebuggerPresent;
-		}
-
-		private static bool DetectTampering()
-		{
-			try
-			{
-				if (!File.Exists(FilePath)) return false;
-
-				var fileInfo = new FileInfo(FilePath);
-				if (fileInfo.LastWriteTime > DateTime.Now.AddMinutes(5))
-					return true;
-
-				if (fileInfo.Length > 1024 || fileInfo.Length < 10)
-					return true;
-
+				File.Delete(LicenseFilePath);
 				return false;
 			}
-			catch { return true; }
-		}
 
-		private static bool VerifyLicenseIntegrity(string licenseData)
-		{
-			try
+			// Chỉ cập nhật thời gian nếu đây là lần đầu kích hoạt
+			if (CurrentLicense == LicenseType.Invalid)
 			{
-				var parts = licenseData.Split('|');
-				if (parts.Length != 5)
-				{
-					Console.WriteLine("Invalid license format");
-					return false;
-				}
-
-				// Lấy các phần của license
-				string activationDate = parts[0];
-				string expirationDate = parts[1];
-				string storedMachineId = parts[2].TrimEnd('.');
-				string licenseType = parts[3];
-				string storedHash = parts[4];
-
-				// Lấy Machine ID hiện tại
-				string currentMachineId = GetMachineId().TrimEnd('.');
-
-				// Debug thông tin
-				Console.WriteLine($"Current Machine ID: {currentMachineId}");
-				Console.WriteLine($"Stored Machine ID: {storedMachineId}");
-
-				// So sánh Machine ID (bỏ qua prefix nếu có)
-				if (!storedMachineId.Contains(currentMachineId))
-				{
-					Console.WriteLine("Machine ID mismatch");
-					return false;
-				}
-
-				// Kiểm tra ngày tháng
-				if (!DateTime.TryParse(activationDate, out DateTime actDate) || 
-					!DateTime.TryParse(expirationDate, out DateTime expDate))
-				{
-					Console.WriteLine("Invalid date format");
-					return false;
-				}
-
-				// Tính hash đơn giản
-				var calculatedHash = (actDate.GetHashCode() ^ expDate.GetHashCode() ^ storedMachineId.GetHashCode()).ToString();
-				
-				Console.WriteLine($"Hash comparison:");
-				Console.WriteLine($"Stored: {storedHash}");
-				Console.WriteLine($"Calculated: {calculatedHash}");
-				
-				// Nếu hash không khớp, thử tính lại với currentMachineId
-				if (calculatedHash != storedHash)
-				{
-					calculatedHash = (actDate.GetHashCode() ^ expDate.GetHashCode() ^ currentMachineId.GetHashCode()).ToString();
-					Console.WriteLine($"Recalculated with current Machine ID: {calculatedHash}");
-				}
-				
-				return calculatedHash == storedHash;
+				ActivationTime = licenseData.ActivationTime;
+				ExpiryTime = licenseData.ExpiryTime;
 			}
-			catch (Exception ex)
+
+			// Kiểm tra nếu đã hết hạn
+			if (DateTime.Now > ExpiryTime)
 			{
-				Console.WriteLine($"Error verifying license: {ex.Message}");
+				File.Delete(LicenseFilePath);
 				return false;
 			}
+
+			return true;
 		}
-
-
-
-
-
-
-		public static void SaveLicenseInfo(string machineId, DateTime activationDate, DateTime expirationDate, string licenseFlag)
+		catch
 		{
-			string licenseInfo = $"{activationDate:o}|{expirationDate:o}|{machineId}|{licenseFlag}";
-			licenseInfo += $"|{(activationDate.GetHashCode() ^ expirationDate.GetHashCode() ^ machineId.GetHashCode())}";
-
-			try
-			{
-				string encryptedLicenseInfo = Encrypt(licenseInfo);
-				File.WriteAllText(FilePath, encryptedLicenseInfo);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error saving license info: {ex.Message}");
-				throw;
-			}
+			try { File.Delete(LicenseFilePath); } catch { }
+			return false;
 		}
+	}
 
-		public static string Encrypt(string plainText)
+	private void ActivateLicense(LicenseType type, string licenseKey)
+	{
+		// Chỉ thiết lập thời gian nếu đây là lần đầu kích hoạt
+		if (CurrentLicense == LicenseType.Invalid)
 		{
-			return Convert.ToBase64String(EncryptData(plainText, AesKey));
+			CurrentLicense = type;
+			ActivationTime = DateTime.Now;
+
+			// Tính toán thời gian hết hạn
+			switch (type)
+			{
+				case LicenseType.Trial5Min:
+					ExpiryTime = ActivationTime.AddMinutes(5);
+					break;
+				case LicenseType.Trial60Min:
+					ExpiryTime = ActivationTime.AddHours(1);
+					break;
+				case LicenseType.Permanent:
+					ExpiryTime = DateTime.MaxValue;
+					break;
+				default:
+					ExpiryTime = DateTime.MinValue;
+					break;
+			}
+
+			// Lưu thông tin license
+			SaveLicenseData(licenseKey);
 		}
 
-		public static string Decrypt(string cipherText)
+		// Luôn khởi động timer cho bản quyền tạm thời
+		if (type != LicenseType.Permanent)
 		{
-			try
-			{
-				byte[] cipherData = Convert.FromBase64String(cipherText);
-				return DecryptData(cipherData, AesKey);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Decryption error: {ex.Message}");
-				return string.Empty;
-			}
+			_licenseCheckTimer.Start();
 		}
-		public static void InitializeFirstRun()
+	}
+
+	public bool ValidateLicense(string licenseKey)
+	{
+		if (string.IsNullOrWhiteSpace(licenseKey)) return false;
+
+		// Check predefined keys first
+		if (_predefinedKeys.TryGetValue(licenseKey, out var predefinedType))
 		{
-			EnsureDataFolder();
-
-			// Chỉ tạo license file nếu nó chưa tồn tại
-			if (!File.Exists(FilePath))
-			{
-				// Tạo trial license mặc định (1 ngày)
-				var activationDate = DateTime.UtcNow;
-				var expirationDate = activationDate.AddDays(1); // Trial 1 ngày
-				var machineId = GetMachineId();
-
-				string licenseInfo = $"{activationDate:o}|{expirationDate:o}|{machineId}|{TrialFlag}";
-				licenseInfo += $"|{activationDate.GetHashCode() ^ expirationDate.GetHashCode() ^ machineId.GetHashCode()}";
-
-				File.WriteAllText(FilePath, Encrypt(licenseInfo));
-				Console.WriteLine("Trial license created for first run.");
-			}
+			ActivateLicense(predefinedType, licenseKey);
+			LicenseValidated?.Invoke();
+			return true;
 		}
-		//public static (LicenseState, string, DateTime?) CheckLicense()
-		//{
-		//	try
-		//	{
-		//		Console.WriteLine("DEBUG: Running license check");
 
-		//		// UNCOMMENT dòng này nếu bạn muốn BYPASS license check
-		//		//return (LicenseState.Activated, "DEBUG: Always activated", DateTime.UtcNow.AddYears(1));
-
-		//		//Debug check -COMMENT dòng này nếu ứng dụng đang chạy trong debugger
-		//		 if (IsDebugging())
-		//			return (LicenseState.Invalid, "Debugger detected.", null);
-
-		//		// File existence check
-		//		if (!File.Exists(FilePath))
-		//		{
-		//			Console.WriteLine("License file not found at: " + FilePath);
-		//			return (LicenseState.Invalid, "License file not found", null);
-		//		}
-
-		//		// Read and decrypt
-		//		string licenseContent = File.ReadAllText(FilePath);
-		//		string decrypted = Decrypt(licenseContent);
-
-		//		if (string.IsNullOrWhiteSpace(decrypted))
-		//		{
-		//			Console.WriteLine("Decryption failed or empty content");
-		//			return (LicenseState.Invalid, "Decryption failed", null);
-		//		}
-
-		//		// Verify integrity
-		//		if (!VerifyLicenseIntegrity(decrypted))
-		//		{
-		//			Console.WriteLine("Integrity check failed");
-		//			return (LicenseState.Invalid, "Tamper detected", null);
-		//		}
-		//		Console.WriteLine("Integrity check passed");
-
-		//		// Parse license
-		//		var parts = decrypted.Split('|');
-		//		if (parts.Length < 4)
-		//		{
-		//			Console.WriteLine($"Invalid format. Expected 4 parts, got {parts.Length}");
-		//			return (LicenseState.Invalid, "Invalid format", null);
-		//		}
-
-		//		// Parse dates
-		//		if (!DateTime.TryParse(parts[0], out DateTime activationDate) ||
-		//			!DateTime.TryParse(parts[1], out DateTime expirationDate))
-		//		{
-		//			Console.WriteLine($"Date parse failed. Activation: {parts[0]}, Expiration: {parts[1]}");
-		//			return (LicenseState.Invalid, "Invalid dates", null);
-		//		}
-		//		Console.WriteLine("Activation date: " + activationDate);
-		//		Console.WriteLine("Expiration date: " + expirationDate);
-
-		//		// Machine check - Tạm thời comment để bypass
-		//		//string currentId = GetMachineId();
-		//		//if (parts[2] != currentId)
-		//		//{
-		//		//	Console.WriteLine($"Machine ID mismatch. License: {parts[2]}, Current: {currentId}");
-		//		//	return (LicenseState.Invalid, "Machine mismatch", null);
-		//		//}
-
-		//		// Check expiration
-		//		if (DateTime.UtcNow > expirationDate)
-		//			return (LicenseState.Expired, "License expired", expirationDate);
-		//		Console.WriteLine("License type: " + parts[3]);
-
-		//		// Return appropriate state
-		//		if (parts[3] == ActivatedFlag)
-		//		{
-		//			return (LicenseState.Activated, "Activated", expirationDate);
-		//		}
-		//		else if (parts[3] == TrialFlag)
-		//		{
-		//			return (LicenseState.Trial, "Trial", expirationDate);
-		//		}
-		//		else
-		//		{
-		//			return (LicenseState.Invalid, "Unknown license type", null);
-		//		}
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		Console.WriteLine($"License check error: {ex}");
-
-		//		return (LicenseState.Invalid, $"Check error: {ex.Message}", null);
-		//	}
-		//}
-		public static (LicenseState, string, DateTime?) CheckLicense()
+		// Check generated keys
+		if (ValidateGeneratedLicense(licenseKey))
 		{
-			try
-			{
-				Console.WriteLine("DEBUG: Running license check");
-
-				// UNCOMMENT dòng này nếu bạn muốn BYPASS license check
-				// return (LicenseState.Activated, "DEBUG: Always activated", DateTime.UtcNow.AddYears(1));
-
-				// Debug check - COMMENT dòng này nếu ứng dụng đang chạy trong debugger
-				//if (IsDebugging())
-				//{
-				//	Console.WriteLine("DEBUG: Debugger detected!");
-				//	return (LicenseState.Invalid, "Debugger detected.", null);
-				//}
-
-				// File existence check
-				Console.WriteLine("Kiểm tra file license tại: " + FilePath);
-				if (!File.Exists(FilePath))
-				{
-					Console.WriteLine("License file not found.");
-					return (LicenseState.Invalid, "License file not found", null);
-				}
-
-				var info = new FileInfo(FilePath);
-				Console.WriteLine("File tồn tại: True");
-				Console.WriteLine("Kích thước file: " + info.Length + " bytes");
-
-				// Read and decrypt
-				string licenseContent = File.ReadAllText(FilePath);
-				Console.WriteLine("Đã đọc được nội dung, độ dài: " + licenseContent.Length);
-
-				string decrypted = Decrypt(licenseContent);
-				Console.WriteLine("DEBUG: Nội dung đã giải mã = " + decrypted);
-
-				if (string.IsNullOrWhiteSpace(decrypted))
-				{
-					Console.WriteLine("Decryption failed hoặc nội dung rỗng");
-					return (LicenseState.Invalid, "Decryption failed", null);
-				}
-
-				// Verify integrity
-				if (!VerifyLicenseIntegrity(decrypted))
-				{
-					Console.WriteLine("Integrity check failed");
-					return (LicenseState.Invalid, "Tamper detected", null);
-				}
-				Console.WriteLine("Integrity check passed");
-
-				// Parse license
-				var parts = decrypted.Split('|');
-				Console.WriteLine("DEBUG: Số lượng phần tử sau split = " + parts.Length);
-				if (parts.Length < 4)
-				{
-					Console.WriteLine("Invalid format. Expected 4 parts, got " + parts.Length);
-					return (LicenseState.Invalid, "Invalid format", null);
-				}
-
-				// Parse dates
-				if (!DateTime.TryParse(parts[0], out DateTime activationDate) ||
-					!DateTime.TryParse(parts[1], out DateTime expirationDate))
-				{
-					Console.WriteLine($"Date parse failed. Activation: {parts[0]}, Expiration: {parts[1]}");
-					return (LicenseState.Invalid, "Invalid dates", null);
-				}
-				Console.WriteLine("Activation date: " + activationDate);
-				Console.WriteLine("Expiration date: " + expirationDate);
-
-				// Machine check
-				string currentId = GetMachineId();
-				Console.WriteLine("Machine ID: " + currentId);
-				Console.WriteLine("License Machine ID: " + parts[2]);
-
-				if (parts[2] != currentId)
-				{
-					Console.WriteLine("Machine ID mismatch.");
-					return (LicenseState.Invalid, "Machine mismatch", null);
-				}
-
-				// Check expiration
-				if (DateTime.UtcNow > expirationDate)
-				{
-					Console.WriteLine("License expired.");
-					return (LicenseState.Expired, "License expired", expirationDate);
-				}
-
-				Console.WriteLine("License type: " + parts[3]);
-
-				// Return appropriate state
-				if (parts[3] == ActivatedFlag)
-				{
-					Console.WriteLine("DEBUG: License hợp lệ - ACTIVATED");
-					return (LicenseState.Activated, "Activated", expirationDate);
-				}
-				else if (parts[3] == TrialFlag)
-				{
-					Console.WriteLine("DEBUG: License hợp lệ - TRIAL");
-					return (LicenseState.Trial, "Trial", expirationDate);
-				}
-				else
-				{
-					Console.WriteLine("Unknown license type.");
-					return (LicenseState.Invalid, "Unknown license type", null);
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"License check error: {ex}");
-				return (LicenseState.Invalid, $"Check error: {ex.Message}", null);
-			}
+			LicenseValidated?.Invoke();
+			return true;
 		}
 
-		//public static (LicenseState, string, DateTime?) CheckLicense()
-		//{
-		//	Console.WriteLine("DEBUG: Bypassing license check temporarily");
-		//	return (LicenseState.Activated, "DEBUG: Always activated", DateTime.UtcNow.AddYears(1));
-		//	try
-		//	{
-		//		// Debug check
-		//		if (IsDebugging())
-		//			return (LicenseState.Invalid, "Debugger detected.", null);
+		return false;
+	}
 
-		//		// File existence check
-		//		if (!File.Exists(FilePath))
-		//		{
-		//			Console.WriteLine("License file not found at: " + FilePath);
-		//			return (LicenseState.Invalid, "License file not found", null);
-		//		}
+	private bool ValidateGeneratedLicense(string licenseKey)
+	{
+		var parts = licenseKey.Split('-');
+		if (parts.Length != 3) return false;
 
-		//		// Read and decrypt
-		//		string licenseContent = File.ReadAllText(FilePath);
-		//		string decrypted = Decrypt(licenseContent);
-
-		//		if (string.IsNullOrWhiteSpace(decrypted))
-		//		{
-		//			Console.WriteLine("Decryption failed or empty content");
-		//			return (LicenseState.Invalid, "Decryption failed", null);
-		//		}
-
-		//		// Verify integrity
-		//		if (!VerifyLicenseIntegrity(decrypted))
-		//		{
-		//			Console.WriteLine("Integrity check failed");
-		//			return (LicenseState.Invalid, "Tamper detected", null);
-		//		}
-
-		//		// Parse license
-		//		var parts = decrypted.Split('|');
-		//		if (parts.Length < 4)
-		//		{
-		//			Console.WriteLine($"Invalid format. Expected 4 parts, got {parts.Length}");
-		//			return (LicenseState.Invalid, "Invalid format", null);
-		//		}
-
-		//		// Parse dates
-		//		if (!DateTime.TryParse(parts[0], out DateTime activationDate) ||
-		//			!DateTime.TryParse(parts[1], out DateTime expirationDate))
-		//		{
-		//			Console.WriteLine($"Date parse failed. Activation: {parts[0]}, Expiration: {parts[1]}");
-		//			return (LicenseState.Invalid, "Invalid dates", null);
-		//		}
-
-		//		// Machine check
-		//		string currentId = GetMachineId();
-		//		if (parts[2] != currentId)
-		//		{
-		//			Console.WriteLine($"Machine ID mismatch. License: {parts[2]}, Current: {currentId}");
-		//			return (LicenseState.Invalid, "Machine mismatch", null);
-		//		}
-
-		//		// Check expiration
-		//		if (DateTime.UtcNow > expirationDate)
-		//			return (LicenseState.Expired, "License expired", expirationDate);
-
-		//		// Return appropriate state
-		//		if (parts[3] == ActivatedFlag)
-		//		{
-		//			return (LicenseState.Activated, "Activated", expirationDate);
-		//		}
-		//		else if (parts[3] == TrialFlag)
-		//		{
-		//			return (LicenseState.Trial, "Trial", expirationDate);
-		//		}
-		//		else
-		//		{
-		//			return (LicenseState.Invalid, "Unknown license type", null);
-		//		}
-
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		Console.WriteLine($"License check error: {ex}");
-		//		return (LicenseState.Invalid, $"Check error: {ex.Message}", null);
-		//	}
-		//}
-
-		public static bool ValidateKey(string activationKey)
+		LicenseType type;
+		switch (parts[0])
 		{
-			return ValidLicenseKeys.ContainsKey(activationKey);
+			case "TEMP5": type = LicenseType.Trial5Min; break;
+			case "TEMP60": type = LicenseType.Trial60Min; break;
+			case "PERM": type = LicenseType.Permanent; break;
+			default: type = LicenseType.Invalid; break;
 		}
-		public static bool ActivateLicense(string activationKey)
+
+		if (type == LicenseType.Invalid) return false;
+		if (!ValidateDatePart(parts[1])) return false;
+		if (!VerifyLicenseSignature(parts[2], parts[0] + parts[1])) return false;
+
+		ActivateLicense(type, licenseKey);
+		return true;
+	}
+
+	
+
+	private void SaveLicenseData(string licenseKey)
+	{
+		var licenseData = new LicenseData
 		{
-			if (!ValidLicenseKeys.ContainsKey(activationKey))
-				return false;
+			Key = licenseKey,
+			ActivationTime = this.ActivationTime,
+			ExpiryTime = this.ExpiryTime,
+			LicenseType = this.CurrentLicense
+		};
 
-			try
-			{
-				var duration = ValidLicenseKeys[activationKey];
-				var activationDate = DateTime.UtcNow;
-				var expirationDate = activationDate.Add(duration);
-				var machineId = GetMachineId().TrimEnd('.'); // Loại bỏ dấu chấm thừa
+		string serializedData = JsonConvert.SerializeObject(licenseData);
+		byte[] encrypted = EncryptString(serializedData);
 
-				// Tạo chuỗi dữ liệu để hash
-				var dataToHash = $"{activationDate:o}|{expirationDate:o}|{machineId}|{ActivatedFlag}";
-				
-				// Tính hash đơn giản
-				var hashValue = (activationDate.GetHashCode() ^ expirationDate.GetHashCode() ^ machineId.GetHashCode()).ToString();
-
-				// Tạo license info với hash mới
-				string licenseInfo = $"{activationDate:o}|{expirationDate:o}|{machineId}|{ActivatedFlag}|{hashValue}";
-
-				// Debug info
-				Console.WriteLine($"Creating new license:");
-				Console.WriteLine($"Machine ID: {machineId}");
-				Console.WriteLine($"Activation Date: {activationDate:o}");
-				Console.WriteLine($"Expiration Date: {expirationDate:o}");
-				Console.WriteLine($"Hash: {hashValue}");
-
-				// Lưu license đã mã hóa
-				File.WriteAllText(FilePath, Encrypt(licenseInfo));
-				return true;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error activating license: {ex.Message}");
-				return false;
-			}
-		}
-		//public static bool ActivateLicense(string activationKey)
-		//{
-		//	if (!ValidateKey(activationKey))
-		//		return false;
-
-		//	var duration = ValidLicenseKeys[activationKey];
-		//	var activationDate = DateTime.UtcNow;
-		//	var expirationDate = activationDate.Add(duration);
-
-		//	SaveLicenseInfo(GetMachineId(), activationDate, expirationDate, ActivatedFlag);
-		//	return true;
-		//}
-
-		public static bool IsLicenseCurrentlyActive()
+		try
 		{
-			try
-			{
-				var (state, _, expirationDate) = CheckLicense();
-				return state == LicenseState.Activated && 
-					   expirationDate.HasValue && 
-					   expirationDate.Value > DateTime.UtcNow;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error checking license status: {ex.Message}");
-				return false;
-			}
+			File.WriteAllBytes(LicenseFilePath, encrypted);
 		}
-
-		public static bool IsActivatedAndValid()
+		catch (Exception ex)
 		{
-			try
+			throw new ApplicationException("License save error: " + ex.Message);
+		}
+	}
+
+	public static string GenerateLicenseKey(LicenseType type)
+	{
+		string prefix;
+		switch (type)
+		{
+			case LicenseType.Trial5Min: prefix = "TEMP5"; break;
+			case LicenseType.Trial60Min: prefix = "TEMP60"; break;
+			case LicenseType.Permanent: prefix = "PERM"; break;
+			default: throw new ArgumentException("Invalid license type");
+		}
+
+		string datePart = DateTime.Now.ToString("yyyyMMdd");
+		string data = prefix + datePart;
+		string signature = GenerateSignature(data);
+
+		return string.Format("{0}-{1}-{2}", prefix, datePart, signature);
+	}
+
+	private static string GenerateSignature(string input)
+	{
+		using (var sha256 = SHA256.Create())
+		{
+			byte[] inputBytes = Encoding.UTF8.GetBytes(input + Convert.ToBase64String(EncryptionKey));
+			byte[] hashBytes = sha256.ComputeHash(inputBytes);
+			return BitConverter.ToString(hashBytes).Replace("-", "").Substring(0, 8);
+		}
+	}
+
+	private bool VerifyLicenseSignature(string signature, string data)
+	{
+		return signature == GenerateSignature(data);
+	}
+
+	private bool ValidateDatePart(string datePart)
+	{
+		return datePart.Length == 8 &&
+			   DateTime.TryParseExact(datePart, "yyyyMMdd", null,
+				   System.Globalization.DateTimeStyles.None, out _);
+	}
+
+	private string DecryptLicenseFile()
+	{
+		byte[] encrypted = File.ReadAllBytes(LicenseFilePath);
+		return DecryptString(encrypted);
+	}
+
+	private byte[] EncryptString(string plainText)
+	{
+		using (Aes aes = Aes.Create())
+		{
+			aes.Key = EncryptionKey;
+			aes.IV = new byte[16];
+
+			using (var ms = new MemoryStream())
 			{
-				if (!File.Exists(FilePath))
+				using (var cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
 				{
-					return false;
+					using (var sw = new StreamWriter(cs))
+					{
+						sw.Write(plainText);
+					}
 				}
-
-				string licenseContent = File.ReadAllText(FilePath);
-				string decrypted = Decrypt(licenseContent);
-
-				if (string.IsNullOrWhiteSpace(decrypted))
-				{
-					return false;
-				}
-
-				var parts = decrypted.Split('|');
-				if (parts.Length < 4)
-				{
-					return false;
-				}
-
-				// Kiểm tra ngày hết hạn
-				if (!DateTime.TryParse(parts[1], out DateTime expirationDate))
-				{
-					return false;
-				}
-
-				// Kiểm tra trạng thái và thời hạn
-				return parts[3] == ActivatedFlag && expirationDate > DateTime.UtcNow;
-			}
-			catch
-			{
-				return false;
+				return ms.ToArray();
 			}
 		}
+	}
+
+	private string DecryptString(byte[] cipherText)
+	{
+		using (Aes aes = Aes.Create())
+		{
+			aes.Key = EncryptionKey;
+			aes.IV = new byte[16];
+
+			using (var ms = new MemoryStream(cipherText))
+			{
+				using (var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read))
+				{
+					using (var sr = new StreamReader(cs))
+					{
+						return sr.ReadToEnd();
+					}
+				}
+			}
+		}
+	}
+
+	private void InitializeLicenseCheckTimer()
+	{
+		_licenseCheckTimer = new DispatcherTimer
+		{
+			Interval = TimeSpan.FromSeconds(30)
+		};
+		_licenseCheckTimer.Tick += (s, e) => CheckLicenseValidity();
+	}
+
+	private void CheckLicenseValidity()
+	{
+		if (DateTime.Now > ExpiryTime)
+		{
+			_licenseCheckTimer.Stop();
+			CurrentLicense = LicenseType.Invalid;
+			LicenseExpired?.Invoke();
+
+			try { File.Delete(LicenseFilePath); } catch { }
+		}
+	}
+
+	// Helper class for license data serialization
+	private class LicenseData
+	{
+		public string Key { get; set; }
+		public DateTime ActivationTime { get; set; }
+		public DateTime ExpiryTime { get; set; }
+		public LicenseType LicenseType { get; set; }
 	}
 }

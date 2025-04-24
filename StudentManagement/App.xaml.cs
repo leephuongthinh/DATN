@@ -1,218 +1,183 @@
-﻿using System;
-using System.Management;
-using System.Windows;
-using DemoLicenseApp;
+﻿using StudentManagement.Services;
 using StudentManagement.Views;
-using System.IO;
-
+using System;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace StudentManagement
 {
 	public partial class App : Application
 	{
+		private LicenseService _licenseService;
+		private DispatcherTimer _licenseCheckTimer;
+
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
 
-			// Ngăn ứng dụng tự shutdown khi cửa sổ đầu tiên đóng
-			this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+			// Khởi tạo dịch vụ bản quyền
+			_licenseService = new LicenseService();
 
-			try
+			// Kiểm tra bản quyền hiện có
+			if (!CheckLicenseValidity())
 			{
-				// Khởi tạo hệ thống license
-				Console.WriteLine("Initializing license...");
-				LicenseService.InitializeFirstRun();
-				Console.WriteLine("License initialization completed");
+				Shutdown();
+				return;
+			}
 
-				// Kiểm tra trạng thái license
-				var (licenseState, message, expirationDate) = LicenseService.CheckLicense();
+			// Thiết lập kiểm tra bản quyền định kỳ
+			//SetupLicenseCheckTimer();
 
-				switch (licenseState)
+			// Khởi chạy ứng dụng
+			StartApplication();
+		}
+		//protected override void OnStartup(StartupEventArgs e)
+		//{
+		//	base.OnStartup(e);
+		//	_licenseService = new LicenseService();
+
+		//	_licenseService.CheckLicenseOnStartup(); // Kiểm tra ngay khi khởi động
+
+		//	_licenseService.LicenseExpired += () =>
+		//	{
+		//		Dispatcher.Invoke(() =>
+		//		{
+		//			var activationWindow = new ActivationWindow(_licenseService)
+		//			{
+		//				WindowStartupLocation = WindowStartupLocation.CenterScreen,
+		//				Topmost = true
+		//			};
+		//			if (!CheckLicenseValidity())
+		//					{
+		//						Shutdown();
+		//						return;
+		//					}
+		//				if (activationWindow.ShowDialog() != true || !CheckLicenseValidity())
+		//			{
+		//				Shutdown();
+		//			}
+		//		});
+		//	};
+
+		//	if (!_licenseService.IsValid)
+		//	{
+		//		var activationWindow = new ActivationWindow(_licenseService);
+		//		if (activationWindow.ShowDialog() != true)
+		//		{
+		//			Shutdown();
+		//			return;
+		//		}
+		//	}
+
+		//	StartApplication();
+		//}
+
+		private bool CheckLicenseValidity()
+		{
+			// Kiểm tra bản quyền đã lưu
+			bool hasValidLicense = _licenseService.CheckExistingLicense();
+
+			// Nếu không có bản quyền hợp lệ, hiển thị cửa sổ kích hoạt
+			if (!hasValidLicense)
+			{
+				var activationWindow = new ActivationWindow(_licenseService)
 				{
-					case LicenseState.Activated:
-						if (expirationDate.HasValue && expirationDate.Value > DateTime.UtcNow)
-						{
-							Console.WriteLine("License đã activated và còn hạn - Starting application");
-							StartApplication();
-							return;
-						}
-						else
-						{
-							MessageBox.Show(
-								"License đã hết hạn. Vui lòng kích hoạt lại.",
-								"Hết hạn license",
-								MessageBoxButton.OK,
-								MessageBoxImage.Warning);
-							ShowActivationWindow();
-						}
-						break;
+					WindowStartupLocation = WindowStartupLocation.CenterScreen
+				};
 
-					case LicenseState.Trial:
-						if (expirationDate.HasValue && expirationDate.Value > DateTime.UtcNow)
-						{
-							var remainingTime = expirationDate.Value - DateTime.UtcNow;
-							if (MessageBox.Show(
-								$"Bạn đang dùng bản dùng thử. Còn {remainingTime.Days} ngày {remainingTime.Hours} giờ.\nBạn có muốn kích hoạt ngay không?",
-								"Bản dùng thử",
-								MessageBoxButton.YesNo,
-								MessageBoxImage.Question) == MessageBoxResult.Yes)
-							{
-								ShowActivationWindow();
-							}
-							else
-							{
-								StartApplication();
-							}
-						}
-						else
-						{
-							MessageBox.Show(
-								"Thời gian dùng thử đã hết. Vui lòng kích hoạt phần mềm.",
-								"Hết hạn dùng thử",
-								MessageBoxButton.OK,
-								MessageBoxImage.Warning);
-							ShowActivationWindow();
-						}
-						break;
+				activationWindow.ShowDialog();
 
-					default:
-						MessageBox.Show(
-							"Vui lòng kích hoạt phần mềm để sử dụng.",
-							"Yêu cầu kích hoạt",
-							MessageBoxButton.OK,
-							MessageBoxImage.Information);
-						ShowActivationWindow();
-						break;
+				if (!_licenseService.IsValid)
+				{
+					MessageBox.Show(
+						"Bạn cần có bản quyền hợp lệ để sử dụng ứng dụng.\n\n" +
+						"Vui lòng liên hệ nhà cung cấp để được hỗ trợ.",
+						"Yêu Cầu Bản Quyền",
+						MessageBoxButton.OK,
+						MessageBoxImage.Warning);
+					return false;
 				}
 			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Lỗi khởi động: {ex}");
-				MessageBox.Show(
-					"Có lỗi xảy ra khi khởi động ứng dụng. Vui lòng thử lại.",
-					"Lỗi",
-					MessageBoxButton.OK,
-					MessageBoxImage.Error);
-				Shutdown();
-			}
+
+			return true;
 		}
 
-		private void ShowActivationWindow()
+		//private void SetupLicenseCheckTimer()
+		//{
+		//	_licenseCheckTimer = new DispatcherTimer
+		//	{
+		//		Interval = TimeSpan.FromMinutes(1) // Kiểm tra mỗi phút
+		//	};
+
+		//	_licenseCheckTimer.Tick += (s, e) =>
+		//	{
+		//		if (!_licenseService.IsValid)
+		//		{
+		//			_licenseCheckTimer.Stop();
+		//			HandleLicenseExpired();
+		//		}
+		//	};
+
+		//	_licenseCheckTimer.Start();
+		//}
+
+		private void HandleLicenseExpired()
 		{
-			try
+			// Hiển thị thông báo trên UI thread
+			Dispatcher.Invoke(() =>
 			{
-				var activationWindow = new ActivationWindow();
-				bool? result = activationWindow.ShowDialog();
-
-				if (result == true)
-				{
-					// Kiểm tra lại sau khi kích hoạt
-					if (LicenseService.IsActivatedAndValid())
-					{
-						Console.WriteLine("Kích hoạt thành công - Starting application");
-						StartApplication();
-						return;
-					}
-					
-					MessageBox.Show(
-						"Kích hoạt không thành công. Vui lòng thử lại.",
-						"Lỗi kích hoạt",
-						MessageBoxButton.OK,
-						MessageBoxImage.Error);
-				}
-
-				Shutdown();
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Lỗi trong quá trình kích hoạt: {ex}");
 				MessageBox.Show(
-					"Có lỗi xảy ra trong quá trình kích hoạt. Vui lòng thử lại.",
-					"Lỗi",
+					"Phiên bản dùng thử của bạn đã hết hạn.\n" +
+					$"Thời gian còn lại: {_licenseService.RemainingTime:mm\\:ss}\n" +
+					"Vui lòng kích hoạt bản quyền đầy đủ.",
+					"Hết Hạn Bản Quyền",
 					MessageBoxButton.OK,
-					MessageBoxImage.Error);
-				Shutdown();
-			}
+					MessageBoxImage.Information);
+
+				// Hiển thị lại cửa sổ kích hoạt
+				var activationWindow = new ActivationWindow(_licenseService)
+				{
+					WindowStartupLocation = WindowStartupLocation.CenterScreen
+				};
+
+				activationWindow.ShowDialog();
+
+				// Nếu không kích hoạt thành công, đóng ứng dụng
+				if (!_licenseService.IsValid)
+				{
+					Shutdown();
+				}
+				else
+				{
+					// Nếu kích hoạt thành công, tiếp tục sử dụng
+					_licenseCheckTimer.Start();
+				}
+			});
 		}
 
 		private void StartApplication()
 		{
-			var mainWindow = new MainWindow();
-			this.MainWindow = mainWindow;
-			this.ShutdownMode = ShutdownMode.OnMainWindowClose;
-			mainWindow.Show();
-		}
-
-		public static string GetMachineId()
-		{
 			try
 			{
-				// Thử nhiều cách lấy ID phần cứng
-				string identifier = GetHardDiskSerial() ?? GetProcessorId() ?? GetBiosSerial();
-				return string.IsNullOrWhiteSpace(identifier) ? "UnknownMachineId" : identifier.Trim();
+				var mainWindow = new MainWindow();
+				MainWindow = mainWindow;
+				//mainWindow.Show();
 			}
-			catch
+			catch (Exception ex)
 			{
-				return "ErrorGettingMachineId";
+				MessageBox.Show(
+					$"Không thể khởi động ứng dụng: {ex.Message}",
+					"Lỗi Khởi Động",
+					MessageBoxButton.OK,
+					MessageBoxImage.Error);
+				Shutdown();
 			}
 		}
 
-		private static string GetHardDiskSerial()
+		protected override void OnExit(ExitEventArgs e)
 		{
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_PhysicalMedia"))
-				{
-					foreach (ManagementObject disk in searcher.Get())
-					{
-						string serial = disk["SerialNumber"]?.ToString();
-						if (!string.IsNullOrWhiteSpace(serial))
-							return serial;
-					}
-				}
-			}
-			catch { }
-			return null;
-		}
-
-		private static string GetProcessorId()
-		{
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher("SELECT ProcessorId FROM Win32_Processor"))
-				{
-					foreach (ManagementObject cpu in searcher.Get())
-					{
-						string id = cpu["ProcessorId"]?.ToString();
-						if (!string.IsNullOrWhiteSpace(id))
-							return id;
-					}
-				}
-			}
-			catch { }
-			return null;
-		}
-
-		private static string GetBiosSerial()
-		{
-			try
-			{
-				using (var searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BIOS"))
-				{
-					foreach (ManagementObject bios in searcher.Get())
-					{
-						string serial = bios["SerialNumber"]?.ToString();
-						if (!string.IsNullOrWhiteSpace(serial))
-							return serial;
-					}
-				}
-			}
-			catch { }
-			return null;
+			_licenseCheckTimer?.Stop();
+			base.OnExit(e);
 		}
 	}
-
-
 }
-
-

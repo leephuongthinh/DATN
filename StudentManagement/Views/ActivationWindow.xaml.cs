@@ -1,47 +1,80 @@
-﻿using DemoLicenseApp;
-using StudentManagement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using StudentManagement.Services;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.IO;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace StudentManagement.Views
 {
-	/// <summary>
-	/// Interaction logic for ActivationWindow.xaml
-	/// </summary>
 	public partial class ActivationWindow : Window
 	{
-		public ActivationWindow()
+		private readonly LicenseService _licenseService;
+
+		public ActivationWindow(LicenseService licenseService)
 		{
 			InitializeComponent();
+			_licenseService = licenseService;
+			LicenseKeyTextBox.Focus();
 		}
 
 		private void Activate_Click(object sender, RoutedEventArgs e)
 		{
-			string key = LicenseKeyTextBox.Text.Trim();
-			if (LicenseService.ActivateLicense(key))
+			string licenseKey = LicenseKeyTextBox.Text.Trim();
+
+			if (string.IsNullOrWhiteSpace(licenseKey))
 			{
-				MessageBox.Show("Activated successfully!", "Success",
-								MessageBoxButton.OK, MessageBoxImage.Information);
+				ShowErrorMessage("Vui lòng nhập mã kích hoạt");
+				return;
+			}
+
+			// Kiểm tra cả key mặc định và key tự sinh
+			if (_licenseService.ValidateLicense(licenseKey))
+			{
 				DialogResult = true;
 				Close();
 			}
 			else
 			{
-				MessageBox.Show("Invalid key. Please try again.", "Error",
-								MessageBoxButton.OK, MessageBoxImage.Error);
+				ShowErrorMessage(GetLicenseFormatGuidance());
 			}
+		}
+
+		private string GetLicenseFormatGuidance()
+		{
+			return "Mã kích hoạt không hợp lệ.";
+		}
+
+		private void LicenseKeyTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			// Tự động thêm dấu gạch ngang cho định dạng key tự động
+			var textBox = sender as TextBox;
+			if (textBox == null) return;
+
+			string text = textBox.Text.Replace("-", "");
+			if (text.Length > 0 && !text.StartsWith("DEMO")) // Không áp dụng cho key mặc định
+			{
+				textBox.Text = FormatWithDashes(text);
+				textBox.CaretIndex = textBox.Text.Length;
+			}
+
+			StatusMessage.Visibility = Visibility.Collapsed;
+		}
+
+		private string FormatWithDashes(string input)
+		{
+			if (input.Length <= 5) return input;
+			if (input.Length <= 11) return $"{input.Substring(0, 5)}-{input.Substring(5)}";
+			return $"{input.Substring(0, 5)}-{input.Substring(5, 6)}-{input.Substring(11)}";
+		}
+
+		private void Exit_Click(object sender, RoutedEventArgs e)
+		{
+			DialogResult = false;
+			Close();
+		}
+
+		private void ShowErrorMessage(string message)
+		{
+			StatusMessage.Text = message;
+			StatusMessage.Visibility = Visibility.Visible;
 		}
 	}
 }
