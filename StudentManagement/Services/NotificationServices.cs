@@ -99,7 +99,7 @@ namespace StudentManagement.Services
                     }
                 case "Thông báo học viên":
                     {
-                        users = DataProvider.Instance.Database.Users.Where(user => user.UserRole.Role.Contains("học viên")).ToList();
+                        users = DataProvider.Instance.Database.Users.Where(user => user.UserRole.Role.Contains("Học viên")).ToList();
                         break;
                     }
                 case "Thông báo giáo viên":

@@ -79,8 +79,9 @@ namespace StudentManagement.ViewModels
 
 			switch (LoginServices.CurrentUser.UserRole.Role)
             {
-                case "học viên":
-                    foreach (SubjectClass item in CourseRegisterServices.Instance.LoadCourseRegisteredListBySemesterIdAndStudentId(SelectedSemester.Id, CurrentStudent.Id))
+                case "Học viên":
+
+					foreach (SubjectClass item in CourseRegisterServices.Instance.LoadCourseRegisteredListBySemesterIdAndStudentId(SelectedSemester.Id, CurrentStudent.Id))
                     {
                         ScheduleItem temp = new ScheduleItem(item);
                         ScheduleItems.Add(temp);

@@ -127,7 +127,7 @@ namespace StudentManagement.ViewModels
             Roles = new ObservableCollection<string>();
             Roles.Add("Admin");
             Roles.Add("Giáo viên");
-            Roles.Add("học viên");
+            Roles.Add("Học viên");
 
 
             InitCommand();
@@ -279,7 +279,7 @@ namespace StudentManagement.ViewModels
 
 
                 {
-                    if (SelectedRole == "học viên")
+                    if (SelectedRole == "Học viên")
                     {
                         Student currentStudent = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == ThisUser.Id).FirstOrDefault();
 

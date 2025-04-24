@@ -184,7 +184,7 @@ namespace StudentManagement.ViewModels
                             UserServices.Instance.SaveUserToDatabase(NewUser);
 
 
-                            if (role == "học viên")
+                            if (role == "Học viên")
                             {
                                 Student newStudent = new Student();
                                 newStudent.IdUsers = NewUser.Id;

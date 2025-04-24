@@ -297,7 +297,7 @@ namespace StudentManagement
 			{
 				var mainWindow = new MainWindow();
 				MainWindow = mainWindow;
-				mainWindow.Show();
+				//mainWindow.Show();
 			}
 			catch (Exception ex)
 			{

@@ -15,8 +15,8 @@ public class LicenseService
 	// Default keys
 	private static readonly Dictionary<string, LicenseType> _predefinedKeys = new Dictionary<string, LicenseType>
 	{
-		{ "DEMO-5MIN-ABCDE", LicenseType.Trial5Min },
-		{ "DEMO-1HOUR-XYZ12", LicenseType.Trial60Min },
+		{ "DEMO-1MOTH-ABCDE", LicenseType.Trial1Moth },
+		{ "DEMO-6MOTH-XYZ12", LicenseType.Trial6Moth },
 		{ "DEMO-PERM-12345", LicenseType.Permanent }
 	};
 
@@ -31,8 +31,8 @@ public class LicenseService
 
 	public enum LicenseType
 	{
-		Trial5Min,
-		Trial60Min,
+		Trial1Moth,
+		Trial6Moth,
 		Permanent,
 		Invalid
 	}
@@ -156,11 +156,11 @@ public class LicenseService
 			// Tính toán thời gian hết hạn
 			switch (type)
 			{
-				case LicenseType.Trial5Min:
-					ExpiryTime = ActivationTime.AddMinutes(5);
+				case LicenseType.Trial1Moth:
+					ExpiryTime = ActivationTime.AddMonths(1);
 					break;
-				case LicenseType.Trial60Min:
-					ExpiryTime = ActivationTime.AddHours(1);
+				case LicenseType.Trial6Moth:
+					ExpiryTime = ActivationTime.AddMonths(6);
 					break;
 				case LicenseType.Permanent:
 					ExpiryTime = DateTime.MaxValue;
@@ -211,8 +211,8 @@ public class LicenseService
 		LicenseType type;
 		switch (parts[0])
 		{
-			case "TEMP5": type = LicenseType.Trial5Min; break;
-			case "TEMP60": type = LicenseType.Trial60Min; break;
+			case "TEMP1": type = LicenseType.Trial1Moth; break;
+			case "TEMP60": type = LicenseType.Trial6Moth; break;
 			case "PERM": type = LicenseType.Permanent; break;
 			default: type = LicenseType.Invalid; break;
 		}
@@ -255,8 +255,8 @@ public class LicenseService
 		string prefix;
 		switch (type)
 		{
-			case LicenseType.Trial5Min: prefix = "TEMP5"; break;
-			case LicenseType.Trial60Min: prefix = "TEMP60"; break;
+			case LicenseType.Trial1Moth: prefix = "TEMP1"; break;
+			case LicenseType.Trial6Moth: prefix = "TEMP60"; break;
 			case LicenseType.Permanent: prefix = "PERM"; break;
 			default: throw new ArgumentException("Invalid license type");
 		}

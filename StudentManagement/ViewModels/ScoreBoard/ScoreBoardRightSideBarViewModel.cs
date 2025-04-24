@@ -75,7 +75,7 @@ namespace StudentManagement.ViewModels
         {
             InitRightSideBarItemViewModel();
             var user = LoginServices.CurrentUser;
-            if (user != null && user.UserRole.Role == "học viên")
+            if (user != null && user.UserRole.Role == "Học viên")
             {
                 IdStudent = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == user.Id).FirstOrDefault().Id;
             }    
@@ -133,7 +133,7 @@ namespace StudentManagement.ViewModels
         private void FreeRightSideBar(object sender, LoginEvent e)
         {
             _rightSideBarItemViewModel = _emptyStateRightSideBarViewModel;
-            if(CurrentUser.UserRole.Role=="học viên")
+            if(CurrentUser.UserRole.Role=="Học viên")
                 IdStudent = DataProvider.Instance.Database.Students.Where(x => x.IdUsers == CurrentUser.Id).FirstOrDefault().Id;
         }
 

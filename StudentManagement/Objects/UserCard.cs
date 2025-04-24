@@ -40,7 +40,7 @@ namespace StudentManagement.Objects
         {
             ID = x.IdUsers;
             DisplayName = UserServices.Instance.GetDisplayNameById((Guid)ID);
-            Role = "học viên";
+            Role = "Học viên";
             
             
         }
