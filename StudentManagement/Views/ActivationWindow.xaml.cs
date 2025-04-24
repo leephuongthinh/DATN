@@ -76,5 +76,10 @@ namespace StudentManagement.Views
 			StatusMessage.Text = message;
 			StatusMessage.Visibility = Visibility.Visible;
 		}
+		public bool ShowActivateButton
+		{
+			get { return ActivateButton.Visibility == Visibility.Visible; }
+			set { ActivateButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed; }
+		}
 	}
 }

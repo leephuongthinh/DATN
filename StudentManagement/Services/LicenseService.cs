@@ -44,24 +44,65 @@ public class LicenseService
 	{
 		InitializeLicenseCheckTimer();
 	}
+	//public void CheckLicenseOnStartup()
+	//{
+	//	if (!File.Exists(LicenseFilePath)) return;
+
+	//	try
+	//	{
+	//		var licenseData = JsonConvert.DeserializeObject<LicenseData>(DecryptLicenseFile());
+	//		if (licenseData == null) return;
+
+	//		// Kiểm tra nếu đã hết hạn khi khởi động
+	//		if (DateTime.Now > licenseData.ExpiryTime)
+	//		{
+	//			File.Delete(LicenseFilePath);
+	//			// Gửi sự kiện yêu cầu kích hoạt lại
+	//			LicenseExpired?.Invoke();
+	//		}
+	//	}
+	//	catch { /* Xử lý lỗi */ }
+	//}
 	public void CheckLicenseOnStartup()
 	{
-		if (!File.Exists(LicenseFilePath)) return;
+		if (!File.Exists(LicenseFilePath))
+		{
+			CurrentLicense = LicenseType.Invalid;
+			return;
+		}
 
 		try
 		{
-			var licenseData = JsonConvert.DeserializeObject<LicenseData>(DecryptLicenseFile());
-			if (licenseData == null) return;
+			string decryptedData = DecryptLicenseFile();
+			var licenseData = JsonConvert.DeserializeObject<LicenseData>(decryptedData);
 
-			// Kiểm tra nếu đã hết hạn khi khởi động
-			if (DateTime.Now > licenseData.ExpiryTime)
+			if (licenseData == null ||
+				string.IsNullOrEmpty(licenseData.Key) ||
+				licenseData.ExpiryTime == default)
 			{
 				File.Delete(LicenseFilePath);
-				// Gửi sự kiện yêu cầu kích hoạt lại
+				CurrentLicense = LicenseType.Invalid;
+				return;
+			}
+
+			// Cập nhật trạng thái từ file
+			CurrentLicense = licenseData.LicenseType;
+			ActivationTime = licenseData.ActivationTime;
+			ExpiryTime = licenseData.ExpiryTime;
+
+			// Kích hoạt sự kiện nếu đã hết hạn
+			if (DateTime.Now > ExpiryTime)
+			{
+				File.Delete(LicenseFilePath);
+				CurrentLicense = LicenseType.Invalid;
 				LicenseExpired?.Invoke();
 			}
 		}
-		catch { /* Xử lý lỗi */ }
+		catch
+		{
+			try { File.Delete(LicenseFilePath); } catch { }
+			CurrentLicense = LicenseType.Invalid;
+		}
 	}
 	public bool CheckExistingLicense()
 	{
