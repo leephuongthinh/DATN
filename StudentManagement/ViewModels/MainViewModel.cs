@@ -145,7 +145,8 @@ namespace StudentManagement.ViewModels
             //CurrentViewModel = _layoutViewModel;
             CurrentViewModel = _loginViewModel;
 
-            MainWindow.Notify.ShowBalloonTip(3000, "LangTrack - Trung tâm tiếng anh số 1 Việt Nam", "Chào mừng bạn đến với LangTrack", System.Windows.Forms.ToolTipIcon.Info);
+          //  MainWindow.Notify.ShowBalloonTip(3000, "LangTrack - Trung tâm tiếng anh số 1 Việt Nam", "Chào mừng bạn đến với LangTrack", System.Windows.Forms.ToolTipIcon.Info);
+            MainWindow.Notify.ShowBalloonTip(3000, "EduManager - Trung tâm ngoại ngữ số 1 Việt Nam", "Chào mừng bạn đến với EduManager ", System.Windows.Forms.ToolTipIcon.Info);
             //GotoLayoutView();
         }
 
@@ -195,7 +196,7 @@ namespace StudentManagement.ViewModels
                 //new NavigationItem("Tổng quan", false, null, _adminHomeViewModel, _adminHomeRightSideBar, LayoutViewModel, "ViewDashboardOutline"),
                 new NavigationItem("Đào tạo", true, temp, null, null, LayoutViewModel, "SchoolOutline"),
                 new NavigationItem("Thông báo", false, null, _adminNotificationViewModel, _adminNotificationRightSideBar, LayoutViewModel, "BellOutline"),
-                new NavigationItem("Thông tin cá nhân", false, null, _adminUserInfoViewModel, null, LayoutViewModel, "AccountCircleOutline"),
+                new NavigationItem("Thông tin người dùng", false, null, _adminUserInfoViewModel, null, LayoutViewModel, "AccountCircleOutline"),
                 new NavigationItem("Người dùng hệ thống", false, null, _campusStudentListViewModel, _campusStudentListRightSideBar, LayoutViewModel, "AccountGroupOutline"),
                 new NavigationItem("Đăng ký học", false, null, _adminCourseRegistryViewModel, _adminCourseRegistryRightSideBar, LayoutViewModel, "CreditCardPlusOutline"),
                 new NavigationItem("Cài đặt", true, tempInfo, null, null, LayoutViewModel, "CogOutline"),
@@ -213,7 +214,7 @@ namespace StudentManagement.ViewModels
             LayoutViewModel.NavigationItems = new ObservableCollection<NavigationItem>() {
                 //new NavigationItem("Tổng quan", false, null, _adminHomeViewModel, _adminHomeRightSideBar, LayoutViewModel, "ViewDashboardOutline"),
                 new NavigationItem("Đào tạo", true, temp, null, null, LayoutViewModel, "SchoolOutline"),
-                new NavigationItem("Bảng điểm học viên", false, null, _scoreboardViewModel, _scoreboardRightSideBar, LayoutViewModel, "DiceD10Outline"),
+                //new NavigationItem("Bảng điểm học viên", false, null, _scoreboardViewModel, _scoreboardRightSideBar, LayoutViewModel, "DiceD10Outline"),
                 new NavigationItem("Thời khóa biểu", false, null, _studentScheduleTableViewModel, null, LayoutViewModel, "CalendarMonthOutline"),
                 new NavigationItem("Thông báo", false, null, _adminNotificationViewModel, _adminNotificationRightSideBar, LayoutViewModel, "BellOutline"),
                 new NavigationItem("Thông tin cá nhân", false, null, _adminUserInfoViewModel, null, LayoutViewModel, "AccountCircleOutline")

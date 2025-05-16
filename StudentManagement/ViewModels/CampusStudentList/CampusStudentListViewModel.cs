@@ -179,6 +179,19 @@ namespace StudentManagement.ViewModels
                             NewUser.DisplayName = student[2].ToString();
                             NewUser.Email = student[3].ToString();
                             NewUser.UserRole = DataProvider.Instance.Database.UserRole.Where(x => x.Role == role).FirstOrDefault();
+
+                            // kiểm tra null 
+                            //if (NewUser.UserRole == null)
+                            //{
+                            //    MyMessageBox.Show($"Không tìm thấy vai trò '{role}' cho tài khoản {NewUser.Username}. Vui lòng kiểm tra lại file Excel.");
+                            //    return;
+                            //}
+                            if (NewUser.UserRole == null)
+                            {
+                                MyMessageBox.Show(" Vui lòng kiểm tra lại file Excel.");
+                                return;
+                            }
+
                             NewUser.IdUserRole = NewUser.UserRole.Id;
 
                             UserServices.Instance.SaveUserToDatabase(NewUser);

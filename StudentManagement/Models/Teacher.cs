@@ -31,5 +31,7 @@ namespace StudentManagement.Models
         public virtual Users Users { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<SubjectClass> SubjectClass { get; set; }
-    }
+		public bool IsDeleted { get; set; } = false;
+
+	}
 }

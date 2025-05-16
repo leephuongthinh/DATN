@@ -62,6 +62,16 @@ namespace StudentManagement.ViewModels
                 OnPropertyChanged();
             }
         }
+        private bool _isSaveComplete;
+        public bool IsSaveComplete
+        {
+            get => _isSaveComplete;
+            set
+            {
+                _isSaveComplete = value;
+                OnPropertyChanged();
+            }
+        }
 
         private Semester _selectedSemester;
 
@@ -167,13 +177,13 @@ namespace StudentManagement.ViewModels
                     case "Admin":
                         return subjectClasses.Where(el => true).ToList();
                     case "Giáo viên":
-                        List<SubjectClass> listSubjectClassTeacher = SubjectClassServices.Instance.MinimizeSubjectClassListBySemesterStatus(subjectClasses.ToList(), new bool[] { false, true, true });
+                        List<SubjectClass> listSubjectClassTeacher = SubjectClassServices.Instance.MinimizeSubjectClassListBySemesterStatus(subjectClasses.ToList(), new bool[] { true, true, true });
                         Teacher currentTeacher = TeacherServices.Instance.GetTeacherbyUser(LoginServices.CurrentUser);
                         return listSubjectClassTeacher.Where(subjectClass => subjectClass.Teacher.FirstOrDefault() == currentTeacher).ToList();
                     default:
                         Student currentStudent = StudentServices.Instance.FindStudentByUserId(LoginServices.CurrentUser.Id);
                         List<SubjectClass> listSubjectClassStudent = CourseRegisterServices.Instance.LoadCourseRegisteredListByStudentId(currentStudent.Id).ToList();
-                        listSubjectClassStudent = SubjectClassServices.Instance.MinimizeSubjectClassListBySemesterStatus(listSubjectClassStudent, new bool[] { false, false, true });
+                        listSubjectClassStudent = SubjectClassServices.Instance.MinimizeSubjectClassListBySemesterStatus(listSubjectClassStudent, new bool[] { true, true, true });
                         return listSubjectClassStudent;
                 }
             }

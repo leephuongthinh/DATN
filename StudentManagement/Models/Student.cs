@@ -34,7 +34,9 @@ namespace StudentManagement.Models
         public virtual ICollection<DetailScore> DetailScore { get; set; }
         public virtual Faculty Faculty { get; set; }
         public virtual TrainingForm TrainingForm { get; set; }
-        public virtual Users Users { get; set; }
+		public bool IsDeleted { get; set; } = false;
+
+		public virtual Users Users { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<TrainingScore> TrainingScore { get; set; }
 		public string Username { get; internal set; }

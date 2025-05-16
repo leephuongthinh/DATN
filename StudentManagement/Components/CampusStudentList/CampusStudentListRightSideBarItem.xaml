@@ -55,7 +55,6 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-
             <Button
                 Width="140"
                 Margin="16,4,16,0"

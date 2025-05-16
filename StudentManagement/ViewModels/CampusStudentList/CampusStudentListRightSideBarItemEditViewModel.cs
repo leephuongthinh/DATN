@@ -113,27 +113,64 @@ namespace StudentManagement.ViewModels
             CurrentStudent = null;
             
         }
+		public CampusStudentListRightSideBarItemEditViewModel(UserCard x)
+		{
+			if (x == null)
+			{
+				throw new ArgumentNullException(nameof(x), "UserCard cannot be null.");
+			}
 
-        public CampusStudentListRightSideBarItemEditViewModel(UserCard x)
-        {
-            CurrentStudent = x;
-            ThisUser = DataProvider.Instance.Database.Users.Where(item => item.Id == x.ID).FirstOrDefault();
-            PreviousRole = ThisUser.UserRole;
-            SelectedRole = x.Role;
-            PreviousEmail = ThisUser.Email;
+			CurrentStudent = x;
 
-            
+			if (x.ID.HasValue)
+			{
+				ThisUser = DataProvider.Instance.Database.Users
+					.FirstOrDefault(item => item.Id == x.ID.Value);
+			}
 
-            Roles = new ObservableCollection<string>();
-            Roles.Add("Admin");
-            Roles.Add("Giáo viên");
-            Roles.Add("Học viên");
+			if (ThisUser == null)
+			{
+				throw new Exception($"Không tìm thấy người dùng với ID = {x.ID}");
+			}
+
+			PreviousRole = ThisUser.UserRole;
+			SelectedRole = x.Role;
+			PreviousEmail = ThisUser.Email;
+
+			Roles = new ObservableCollection<string> { "Admin", "Giáo viên", "học viên" };
+
+			InitCommand();
+		}
 
 
-            InitCommand();
-        }
+		//     public CampusStudentListRightSideBarItemEditViewModel(UserCard x)
+		//     {
+		//         CurrentStudent = x;
+		//if (x.ID.HasValue)
+		//{
+		//	ThisUser = DataProvider.Instance.Database.Users.FirstOrDefault(item => item.Id == x.ID.Value);
+		//}
+		//else
+		//{
+		//	ThisUser = null;
+		//}
+		////ThisUser = DataProvider.Instance.Database.Users.Where(item => item.Id == x.ID).FirstOrDefault();
+		//         PreviousRole = ThisUser.UserRole;
+		//         SelectedRole = x.Role;
+		//         PreviousEmail = ThisUser.Email;
 
-        public ICommand ConfirmEditStudentInfo { get => _confirmEditStudentInfo; set => _confirmEditStudentInfo = value; }
+
+
+		//         Roles = new ObservableCollection<string>();
+		//         Roles.Add("Admin");
+		//         Roles.Add("Giáo viên");
+		//         Roles.Add("học viên");
+
+
+		//         InitCommand();
+		//     }
+
+		public ICommand ConfirmEditStudentInfo { get => _confirmEditStudentInfo; set => _confirmEditStudentInfo = value; }
 
         private ICommand _confirmEditStudentInfo;
 

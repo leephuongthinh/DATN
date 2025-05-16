@@ -28,16 +28,22 @@ namespace StudentManagement.Models
             this.Teacher = new HashSet<Teacher>();
             this.User_UserRole_UserInfo = new HashSet<User_UserRole_UserInfo>();
         }
-    
-        public System.Guid Id { get; set; }
-        public string Username { get; set; }
+		private System.Guid _id { get; set; }
+		public System.Guid Id { get; set; }
+		private string _username { get; set; }
+		public string Username { get; set; }
+		private string _password { get; set; }
         public string Password { get; set; }
-        public string DisplayName { get; set; }
-        public string Email { get; set; }
+		private string _displayName { get; set; }
+		public string DisplayName { get; set; }
+		private string _email { get; set; }
+		public string Email { get; set; }
         public Nullable<System.Guid> IdOTP { get; set; }
         public Nullable<bool> Online { get; set; }
         public Nullable<System.Guid> IdUserRole { get; set; }
-        public Nullable<System.Guid> IdAvatar { get; set; }
+		public bool IsDeleted { get; set; } = false;
+
+		public Nullable<System.Guid> IdAvatar { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Admin> Admin { get; set; }

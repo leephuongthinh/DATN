@@ -13,6 +13,11 @@ namespace StudentManagement.Components
         {
             InitializeComponent();
         }
+
+        private void TextBox_TextChanged()
+        {
+
+        }
     }
 
     public static class PasswordBoxHelper

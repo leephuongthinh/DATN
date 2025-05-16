@@ -34,8 +34,24 @@ namespace StudentManagement.Services
             Admin a = DataProvider.Instance.Database.Admin.Where(adminItem => adminItem.Id == id).FirstOrDefault();
             return a;
         }
+		// Trong StudentServices
+		public Student FindStudentByUserId(Guid userId)
+		{
+			return DataProvider.Instance.Database.Student.FirstOrDefault(s => s.IdUsers == userId);
+		}
 
-        public bool SaveAdminToDatabase(Admin admin)
+		// Trong TeacherServices
+		public Teacher FindTeacherByUserId(Guid userId)
+		{
+			return DataProvider.Instance.Database.Teacher.FirstOrDefault(t => t.IdUsers == userId);
+		}
+
+		// Trong AdminServices
+		public Admin FindAdminByUserId(Guid userId)
+		{
+			return DataProvider.Instance.Database.Admin.FirstOrDefault(a => a.IdUsers == userId);
+		}
+		public bool SaveAdminToDatabase(Admin admin)
         {
             try
             {
@@ -64,5 +80,58 @@ namespace StudentManagement.Services
         {
             return DataProvider.Instance.Database.Admin.FirstOrDefault(admin=>admin.IdUsers == user.Id);
         }
-    }
+		public bool DeleteAdminById(Guid adminId)
+		{
+			try
+			{
+				var admin = FindAdminByAdminId(adminId);
+				if (admin == null)
+				{
+					return false;
+				}
+
+				// Optionally, find and delete the associated Users record
+				var user = DataProvider.Instance.Database.Users.FirstOrDefault(u => u.Id == admin.IdUsers);
+				if (user != null)
+				{
+					DataProvider.Instance.Database.Users.Remove(user);
+				}
+
+				DataProvider.Instance.Database.Admin.Remove(admin);
+				DataProvider.Instance.Database.SaveChanges();
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		public bool DeleteAdminByUserId(Guid userId)
+		{
+			try
+			{
+				var admin = FindAdminByUserId(userId);
+				if (admin == null)
+				{
+					return false;
+				}
+
+				// Optionally, delete the associated Users record
+				var user = DataProvider.Instance.Database.Users.FirstOrDefault(u => u.Id == userId);
+				if (user != null)
+				{
+					DataProvider.Instance.Database.Users.Remove(user);
+				}
+
+				DataProvider.Instance.Database.Admin.Remove(admin);
+				DataProvider.Instance.Database.SaveChanges();
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+	}
 }

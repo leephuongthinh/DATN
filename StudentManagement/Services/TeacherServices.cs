@@ -133,15 +133,41 @@ namespace StudentManagement.Services
             return DataProvider.Instance.Database.Teacher.FirstOrDefault(teacher => teacher.IdUsers == user.Id);
         }
 
-        /// <summary>
-        /// Remove TeacherCard From Database
-        /// </summary>
-        /// <param name="teacherCard"></param>
-        /*public void RemoveTeacherCardFromDatabase(TeacherCard teacherCard)
+		/// <summary>
+		/// Remove TeacherCard From Database
+		/// </summary>
+		/// <param name="teacherCard"></param>
+		/*public void RemoveTeacherCardFromDatabase(TeacherCard teacherCard)
         {
             Teacher teacher = ConvertTeacherCardToTeacher(teacherCard);
 
             RemoveTeacherFromDatabase(teacher);
         }*/
-    }
+		public bool DeleteTeacherByUserId(Guid userId)
+		{
+			try
+			{
+				var teacher = DataProvider.Instance.Database.Teacher.FirstOrDefault(t => t.IdUsers == userId);
+				if (teacher == null)
+				{
+					return false;
+				}
+
+				// Tùy chọn: Xóa bản ghi Users liên quan
+				var user = DataProvider.Instance.Database.Users.FirstOrDefault(u => u.Id == userId);
+				if (user != null)
+				{
+					DataProvider.Instance.Database.Users.Remove(user);
+				}
+
+				DataProvider.Instance.Database.Teacher.Remove(teacher);
+				DataProvider.Instance.Database.SaveChanges();
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+	}
 }

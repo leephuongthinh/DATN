@@ -38,7 +38,7 @@
                     VerticalAlignment="Center"
                     FontSize="32"
                     FontWeight="Bold">
-                    <Run Text="LangTrack - Trung tâm đào anh ngữ số 1" />
+                    <Run Text="EduManage.NET - Trung tâm đào tạo anh ngữ số 1" />
                 </TextBlock>
                 <Image
                     Grid.Row="1"

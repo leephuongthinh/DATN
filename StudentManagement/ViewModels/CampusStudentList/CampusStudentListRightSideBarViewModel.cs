@@ -81,8 +81,10 @@ namespace StudentManagement.ViewModels
         void EditStudentInfoFunction(object p)
         {
             UserCard currentStudent = p as UserCard;
-            _campusStudentListRightSideBarItemViewModel = new CampusStudentListRightSideBarItemEditViewModel(SelectedItem);
-            RightSideBarItemViewModel = _campusStudentListRightSideBarItemViewModel;
+			_campusStudentListRightSideBarItemViewModel = new CampusStudentListRightSideBarItemEditViewModel(SelectedItem);
+			//_campusStudentListRightSideBarItemViewModel = new CampusStudentListRightSideBarItemEditViewModel(currentStudent);
+
+			RightSideBarItemViewModel = _campusStudentListRightSideBarItemViewModel;
         }
 
         public CampusStudentListRightSideBarViewModel()
@@ -134,11 +136,11 @@ namespace StudentManagement.ViewModels
                     InfoSource.Add(new InfoItemViewModel(infoItem));
                 }
             }
-            catch (Exception)
-            {
-                MyMessageBox.Show("Đã có lỗi xảy ra");
-                
-            }
+        catch
+			{
+				MyMessageBox.Show("Có lỗi trong việc khởi tạo trường thông tin", "Thông báo", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+			}
+            
         }
 
         void ShowStudentCardInfoFunction(UserControl p)
@@ -157,7 +159,7 @@ namespace StudentManagement.ViewModels
 
         private void FreeRightSideBar(object sender, LoginEvent e)
         {
-            _rightSideBarItemViewModel = _emptyStateRightSideBarViewModel;
+			_rightSideBarItemViewModel = _emptyStateRightSideBarViewModel;
         }
 
     }

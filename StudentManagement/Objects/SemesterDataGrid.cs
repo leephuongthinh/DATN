@@ -14,7 +14,8 @@ namespace StudentManagement.Objects
 {
     public class SemesterDataGrid : BaseObjectWithBaseViewModel, IBaseCard
     {
-        private double _gpa;
+		public ObservableCollection<ScoreDataGrid> ScoreDataGridItems { get; set; }
+		private double _gpa;
         private int _totalTrainingScore;
         private ObservableCollection<ScoreDataGrid> _currentScore;
         private ObservableCollection<TrainingScoreDataGrid> _currentTrainingScore;

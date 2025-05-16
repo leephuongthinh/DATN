@@ -12,14 +12,15 @@ using System.Windows.Input;
 using StudentManagement.Objects;
 using StudentManagement.Services;
 using StudentManagement.Models;
+using System.IO;
 
 namespace StudentManagement.ViewModels
 {
     public class ScoreBoardViewModel : BaseViewModel
     {
         private string _selectedSemester;
-
-        public string SelectedSemester
+		public ObservableCollection<ScoreDataGrid> ScoreDataGridItems { get; set; }
+		public string SelectedSemester
         {
             get => _selectedSemester;
             set
@@ -77,8 +78,22 @@ namespace StudentManagement.ViewModels
                 OnPropertyChanged();
             }
         }
+		private Guid _selectedStudentId;
+        public Guid SelectedStudentId
+        {
+            get => _selectedStudentId;
+            set
+            {
+                _selectedStudentId = value;
+                OnPropertyChanged();
+                LoadData();
+            }
+        }
+		public ObservableCollection<Student> AccessibleStudents { get; set; }
+		// Thêm thuộc tính xác định mode
+		public bool IsTeacherMode { get; set; }
 
-        private object _overviewScoreboardItem;
+		private object _overviewScoreboardItem;
         public object OverviewScoreboardItem { get => _overviewScoreboardItem; set { _overviewScoreboardItem = value; OnPropertyChanged(); } }
 
         public ICommand OverviewScoreboard { get => _overviewScoreboard; set => _overviewScoreboard = value; }
@@ -106,26 +121,48 @@ namespace StudentManagement.ViewModels
             MainViewModel.Instance.IsOpen = true;
         }
 
-        public void ExportScoreBoardFunction()
-        {
+		public void ExportScoreBoardFunction()
+		{
+			
+		}
+		//public ScoreBoardViewModel()
+		//      {
+		//          LoginServices.UpdateCurrentUser += LoginServices_UpdateCurrentUser;
+		//          if (LoginServices.CurrentUser != null)
+		//          {
+		//              var student = DataProvider.Instance.Database.Student.Where(x => x.IdUsers == LoginServices.CurrentUser.Id).FirstOrDefault();
+		//              if (student == null)
+		//                  return;
+		//              IdStudent = student.Id;
+		//          }
 
-        }
+		//          LoadData();
+		//      }
+		public ScoreBoardViewModel()
+		{
+			LoginServices.UpdateCurrentUser += LoginServices_UpdateCurrentUser;
 
-        public ScoreBoardViewModel()
-        {
-            LoginServices.UpdateCurrentUser += LoginServices_UpdateCurrentUser;
-            if (LoginServices.CurrentUser != null)
-            {
-                var student = DataProvider.Instance.Database.Student.Where(x => x.IdUsers == LoginServices.CurrentUser.Id).FirstOrDefault();
-                if (student == null)
-                    return;
-                IdStudent = student.Id;
-            }
+			// Kiểm tra người dùng hiện tại
+			if (LoginServices.CurrentUser != null)
+			{
+				// Tìm thông tin sinh viên
+				var student = DataProvider.Instance.Database.Student
+					.FirstOrDefault(x => x.IdUsers == LoginServices.CurrentUser.Id);
 
-            LoadData();
-        }
+				if (student != null)
+				{
+					IdStudent = student.Id;
+					LoadData(); // Tải dữ liệu nếu là sinh viên
+				}
+				else
+				{
+					// Hiển thị thông báo nếu không phải sinh viên
+					MyMessageBox.Show("Chức năng này chỉ dành cho sinh viên");
+				}
+			}
+		}
 
-        private void LoadData()
+		private void LoadData()
         {
             GPA = 0;
             TotalCredit = 0;

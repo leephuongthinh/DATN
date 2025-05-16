@@ -23,5 +23,10 @@ namespace StudentManagement.Views
         {
             InitializeComponent();
         }
+
+        private void TitleBar_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

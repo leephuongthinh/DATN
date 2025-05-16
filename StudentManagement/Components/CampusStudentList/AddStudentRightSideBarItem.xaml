@@ -181,6 +181,13 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <!--<Button
+                Grid.Column="0"
+                Command="{Binding DeleteStudentCommand}"
+                Content="Xóa"
+                FontSize="16"
+                ToolTip="Xóa người dùng này"
+/>-->
             <Button
                 Grid.Column="3"
                 Command="{Binding ConfirmEditStudentInfo}"
@@ -197,6 +204,7 @@
                 FontSize="16"
                 Foreground="White"
                 Style="{StaticResource rounded_btn}" />
+            
         </Grid>
     </Grid>
 </UserControl>

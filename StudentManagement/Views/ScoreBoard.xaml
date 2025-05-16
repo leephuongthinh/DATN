@@ -79,7 +79,7 @@
                         </Button>
                     </Grid>
 
-                    <Grid Grid.Column="2">
+                    <!--<Grid Grid.Column="2">
                         <Button
                             Height="50"
                             Margin="16,0,8,12"
@@ -88,7 +88,7 @@
                             ToolTip="Xuất bản điểm ra PDF">
                             <TextBlock Text="Xuất bảng điểm" />
                         </Button>
-                    </Grid>
+                    </Grid>-->
                 </Grid>
 
                 <Grid Grid.Row="2">

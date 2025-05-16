@@ -124,7 +124,7 @@
                                     Style="{StaticResource combobox_item}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding User.DisplayName}" />
+                                            <TextBlock Text="{Binding Users.DisplayName}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>

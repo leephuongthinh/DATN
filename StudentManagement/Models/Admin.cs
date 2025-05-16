@@ -16,7 +16,8 @@ namespace StudentManagement.Models
     {
         public System.Guid Id { get; set; }
         public Nullable<System.Guid> IdUsers { get; set; }
-    
-        public virtual Users Users { get; set; }
+		public bool IsDeleted { get; set; } = false;
+
+		public virtual Users Users { get; set; }
     }
 }

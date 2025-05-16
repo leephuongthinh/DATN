@@ -28,20 +28,20 @@ namespace StudentManagement.ViewModels
         //        EditInfoItemViewModel = new EditInfoItemViewModel(infoItem);
         //    }
         //}
-        //public class DeleteInfoItemWithViewMode
-        //{
-        //    private InfoItem _infoItem;
-        //    private DeleteInfoItemViewModel _deleteInfoItemWithViewModel;
+        public class DeleteInfoItemWithViewMode
+        {
+            private InfoItem _infoItem;
+            private DeleteInfoItemViewModel _deleteInfoItemWithViewModel;
 
-        //    public InfoItem InfoItem { get => _infoItem; set => _infoItem = value; }
-        //    public DeleteInfoItemViewModel DeleteInfoItemWithViewModel { get => _deleteInfoItemWithViewModel; set => _deleteInfoItemWithViewModel = value; }
+            public InfoItem InfoItem { get => _infoItem; set => _infoItem = value; }
+            public DeleteInfoItemViewModel DeleteInfoItemWithViewModel { get => _deleteInfoItemWithViewModel; set => _deleteInfoItemWithViewModel = value; }
 
-        //    public DeleteInfoItemWithViewMode(InfoItem infoItem)
-        //    {
-        //        InfoItem = infoItem;
-        //        DeleteInfoItemWithViewModel = new DeleteInfoItemViewModel(infoItem);
-        //    }
-        //}
+            public DeleteInfoItemWithViewMode(InfoItem infoItem)
+            {
+                InfoItem = infoItem;
+                DeleteInfoItemWithViewModel = new DeleteInfoItemViewModel(infoItem);
+            }
+        }
 
         private static SettingUserInfoViewModel s_instance;
         public static SettingUserInfoViewModel Instance
@@ -132,9 +132,9 @@ namespace StudentManagement.ViewModels
                 DeleteSource = new ObservableCollection<DeleteInfoItemViewModel>();
                 if (ListCheck[0])
                 {
-                    Role = "học viên";
-                    InfoItemServices.Instance.GetInfoSourceInSettingByRole("học viên").ToList().ForEach(infoSource => InfoSource.Add(new EditInfoItemViewModel(infoSource)));
-                    InfoItemServices.Instance.GetDeleteInfoSourceByRole("học viên").ToList().ForEach(infoSource => DeleteSource.Add(new DeleteInfoItemViewModel(infoSource)));
+                    Role = "Học viên";
+                    InfoItemServices.Instance.GetInfoSourceInSettingByRole("Học viên").ToList().ForEach(infoSource => InfoSource.Add(new EditInfoItemViewModel(infoSource)));
+                    InfoItemServices.Instance.GetDeleteInfoSourceByRole("Học viên").ToList().ForEach(infoSource => DeleteSource.Add(new DeleteInfoItemViewModel(infoSource)));
                 }
                 else if (ListCheck[1])
                 {

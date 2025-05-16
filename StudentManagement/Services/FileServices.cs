@@ -142,7 +142,7 @@ namespace StudentManagement.Services
         {
             var doc = db().Document.FirstOrDefault(document => document.Id == file.Id);
             db().Document.Remove(doc);
-            return await db().SaveChangesAsync();
+            return await db().SaveChangesAsync();// error khi click boton cap nhat
         }
 
         public async Task<int> DeleteFolderAsync(FileInfo file)

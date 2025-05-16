@@ -113,7 +113,7 @@
                     DockPanel.Dock="Left"
                     FontWeight="SemiBold"
                     IsChecked="{Binding IsToRemember, Mode=OneWayToSource}" />
-                <TextBlock
+                <!--<TextBlock
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     DockPanel.Dock="Right"
@@ -133,7 +133,7 @@
                     <TextBlock.InputBindings>
                         <MouseBinding Command="{Binding SwitchView}" MouseAction="LeftClick" />
                     </TextBlock.InputBindings>
-                </TextBlock>
+                </TextBlock>-->
             </DockPanel>
 
             <Button

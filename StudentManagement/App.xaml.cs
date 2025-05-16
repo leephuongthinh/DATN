@@ -297,7 +297,7 @@ namespace StudentManagement
 			{
 				var mainWindow = new MainWindow();
 				MainWindow = mainWindow;
-				//mainWindow.Show();
+				mainWindow.Show();
 			}
 			catch (Exception ex)
 			{
@@ -310,15 +310,5 @@ namespace StudentManagement
 			}
 		}
 
-		protected override void OnExit(ExitEventArgs e)
-		{
-			// Dọn dẹp tài nguyên
-			_licenseCheckTimer?.Stop();
-			if (_licenseService != null)
-			{
-				_licenseService.LicenseExpired -= OnLicenseExpired;
-			}
-			base.OnExit(e);
-		}
 	}
 }

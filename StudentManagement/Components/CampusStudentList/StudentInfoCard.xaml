@@ -81,7 +81,7 @@
                             Margin="0,2,0,0"
                             HorizontalAlignment="Center"
                             FontSize="14"
-                            Text="{Binding Role, FallbackValue='học viên'}" />
+                            Text="{Binding Role, FallbackValue='Học viên'}" />
                         <Button
                             Margin="0,4,0,0"
                             Content="Xem chi tiết"

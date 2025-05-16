@@ -15,6 +15,9 @@ namespace StudentManagement.ViewModels
 
         public IEnumerable GetErrors(string propertyName)
         {
+            // sửa lỗi ở đây 05/05
+            if (string.IsNullOrWhiteSpace(propertyName))
+                return null;
             return _propertyErrors.TryGetValue(propertyName, out List<string> result) ? result : null;
         }
 

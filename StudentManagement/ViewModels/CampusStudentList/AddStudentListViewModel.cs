@@ -98,6 +98,8 @@ namespace StudentManagement.ViewModels
 
         private string _selectedTraining;
         public string SelectedTraining { get => _selectedTraining; set => _selectedTraining = value; }
+		public ICommand DeleteStudentCommand { get => _deleteStudentCommand; set => _deleteStudentCommand = value; }
+        private ICommand _deleteStudentCommand;
 
         public AddStudentListViewModel()
         {
@@ -155,9 +157,74 @@ namespace StudentManagement.ViewModels
                 else
                     return false;
             }, (p) => ConfirmEditStudentInfoFunction());
-        }
+			DeleteStudentCommand = new RelayCommand<object>((p) =>
+			{
+				return CurrentStudent != null && CurrentStudent.ID != Guid.Empty;
+			},
+            (p) => DeleteStudentFunction());
+		}
+		private void DeleteStudentFunction()
+		{
+			try
+			{
+				// Xác nhận xóa
+				var result = MyMessageBox.Show("Bạn có chắc chắn muốn xóa người dùng này?", "Xác nhận xóa", System.Windows.MessageBoxButton.YesNo);
+				if (result == System.Windows.MessageBoxResult.Yes)
+				{
+					// Lấy người dùng từ database
+					var user = DataProvider.Instance.Database.Users.FirstOrDefault(u => u.Id == CurrentStudent.ID);
 
-        bool CanEdit()
+					if (user != null)
+					{
+						// Xóa mềm (đặt cờ IsDeleted thành true)
+						user.IsDeleted = true;
+
+						// Xử lý theo từng loại người dùng
+						switch (CurrentStudent.Role)
+						{
+							case "Học viên":
+								var student = AdminServices.Instance.FindStudentByUserId(user.Id);
+								if (student != null)
+								{
+									student.IsDeleted = true;
+								}
+								break;
+							case "Giáo viên":
+								var teacher = AdminServices.Instance.FindTeacherByUserId(user.Id);
+								if (teacher != null)
+								{
+									teacher.IsDeleted = true;
+								}
+								break;
+							case "Admin":
+								var admin = AdminServices.Instance.FindAdminByUserId(user.Id);
+								if (admin != null)
+								{
+									admin.IsDeleted = true;
+								}
+								break;
+						}
+
+						// Lưu thay đổi
+						DataProvider.Instance.Database.SaveChanges();
+
+						// Cập nhật giao diện
+						CampusStudentListViewModel.Instance.UserDatabase.Remove(CurrentStudent);
+						CampusStudentListViewModel.Instance.SearchNameFunction();
+
+						// Đóng sidebar
+						CampusStudentListRightSideBarViewModel.Instance.RightSideBarItemViewModel = new EmptyStateRightSideBarViewModel();
+
+						MyMessageBox.Show("Xóa người dùng thành công!");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MyMessageBox.Show($"Lỗi khi xóa người dùng: {ex.Message}");
+			}
+		}
+		bool CanEdit()
         {
             if (SelectedRole == null)
                 return false;
@@ -246,8 +313,7 @@ namespace StudentManagement.ViewModels
 
         void ConfirmEditStudentInfoFunction()
         {
-            try
-            {
+            
                 if (checkExitCode() != 0)
                 {
                     return;
@@ -324,11 +390,8 @@ namespace StudentManagement.ViewModels
                 CurrentStudent.Role = SelectedRole;
 
                 ReturnToShowStudentInfo();
-            }
-            catch (Exception)
-            {
-                MyMessageBox.Show("Đã có lỗi xảy ra !!");
-            }
+            
+            
         }
 
         public void ReturnToShowStudentInfo()

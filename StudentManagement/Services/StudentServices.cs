@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -100,26 +101,11 @@ namespace StudentManagement.Services
 		}
 		public Student GetStudentbyUser(Users user)
 		{
-			if (user == null)
-			{
-				return null;
-			}
 
-			return DataProvider.Instance.Database.Student
-				.FirstOrDefault(student => student.Username == user.Username);
+			return DataProvider.Instance.Database.Student.FirstOrDefault(student => student.IdUsers == user.Id);                                           
 		}
 
-		//public Student GetStudentbyUser(User user)
-		//{
-		//	if (user == null)
-		//	{
-		//		// Có thể log lỗi hoặc xử lý logic phù hợp
-		//		return null;
-		//	}
 
-		//	return DataProvider.Instance.Database.Students
-		//		.FirstOrDefault(student => student.IdUsers == user.Id);
-		//}
 		public List<Student> GetStudentsByUser(Users user)
 		{
 			if (user == null)
@@ -142,6 +128,32 @@ namespace StudentManagement.Services
 		internal StudentGrid ConvertStudentToStudentGrid(Student student)
 		{
 			throw new NotImplementedException();
+		}
+		public bool DeleteStudentByUserId(Guid userId)
+		{
+			try
+			{
+				var student = DataProvider.Instance.Database.Student.FirstOrDefault(s => s.IdUsers == userId);
+				if (student == null)
+				{
+					return false;
+				}
+
+				// Tùy chọn: Xóa bản ghi Users liên quan
+				var user = DataProvider.Instance.Database.Users.FirstOrDefault(u => u.Id == userId);
+				if (user != null)
+				{
+					DataProvider.Instance.Database.Users.Remove(user);
+				}
+
+				DataProvider.Instance.Database.Student.Remove(student);
+				DataProvider.Instance.Database.SaveChanges();
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 	}
 }

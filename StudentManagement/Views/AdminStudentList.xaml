@@ -158,7 +158,7 @@
                             SecondSearchButtonVisibility="False"
                             TextblockSearchBaseOnVisibility="False" />
 
-                        <Button
+                        <!--<Button
                             Grid.Column="1"
                             Height="50"
                             Margin="16,0,16,0"
@@ -166,7 +166,7 @@
                             Content="Thêm học viên"
                             Style="{StaticResource PrimaryButton}"
                             ToolTip="Thêm học viên"
-                            Visibility="{Binding Converter={utils:PropertyByRoleConverter}, ConverterParameter='Visibility'}" />
+                            Visibility="{Binding Converter={utils:PropertyByRoleConverter}, ConverterParameter='Visibility'}" />-->
 
                         <Button
                             Grid.Column="2"

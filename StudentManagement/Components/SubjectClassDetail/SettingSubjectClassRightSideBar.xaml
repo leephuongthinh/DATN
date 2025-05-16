@@ -30,7 +30,7 @@
                 HorizontalAlignment="Center"
                 FontSize="18"
                 FontWeight="SemiBold"
-                Text="Nghề giáo là nghề cao quý nhất trong các nghề cao quý."
+                Text="Học tập để có một tương lai tươi sáng."
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>

@@ -19,7 +19,7 @@ namespace StudentManagement.Services
         private HttpClient _client;
 
         private const string UrlUpload = "https://api.imgbb.com/1/upload";
-        private const string Token = "3213e81dd00c4bbdff28dc9939327835";//3213e81dd00c4bbdff28dc9939327835
+        private const string Token = "3213e81dd00c4bbdff28dc9939327835";
 
 		public ImageUploader()
         {
